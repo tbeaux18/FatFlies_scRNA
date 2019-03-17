@@ -89,6 +89,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * Dr. Jennifer Beshel, PhD
-* Dr. Catherine, Putonti, PhD
+* Dr. Catherine Putonti, PhD
+* Loyola University Chicago
 * CEL-Seq2 authors
 
