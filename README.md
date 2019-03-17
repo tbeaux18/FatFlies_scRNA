@@ -78,9 +78,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Timothy Baker**
+* **Amanda Wills**
+* **Jasen Jackson**
 
 ## License
 
@@ -88,7 +88,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Dr. Jennifer Beshel, PhD
+* Dr. Catherine, Putonti, PhD
+* CEL-Seq2 authors
 
