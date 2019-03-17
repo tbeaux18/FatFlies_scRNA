@@ -17,3 +17,12 @@
 
 # log files
 *.log
+
+# ignore this specific directory
+/off_hand_notes
+
+# DS_store
+.DS_Store
+
+# ignore compiled python
+*.pyc
