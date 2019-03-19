@@ -81,7 +81,8 @@ def batch_iterator(iterator, batch_size):
         batch = []
         while len(batch) < batch_size:
             try:
-                entry = iterator.next()
+                entry = next(iterator)
+                # was iterator.next() may have changed in python3
             except StopIteration:
                 entry = None
             if entry is None:
