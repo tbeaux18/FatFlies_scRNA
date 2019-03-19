@@ -164,6 +164,7 @@ def split_fastq_files(fastq_file, total_seq_num):
             count = SeqIO.write(batch, handle, "fastq")
 
         # change to logging function
+        print("Created {}".format(abs_filename))
         LOGGER.info("Wrote %s records to %s", str(count), abs_filename)
 
 
