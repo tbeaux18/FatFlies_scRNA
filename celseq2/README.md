@@ -25,7 +25,7 @@ These files were edited to contain relevant parameters and file paths. See confi
     celseq2 --config-file /home1/jjackson10/FatFlies_scRNA/celseq2/config.yaml \
     --experiment-table /home1/jjackson10/FatFlies_scRNA/celseq2/experiment_table.txt \
     --output-dir /home1/jjackson10/FatFlies_scRNA/celseq2/results \
-    --dry-run \
+    --dryrun \
     -j 16
 
 ## Running away from server
