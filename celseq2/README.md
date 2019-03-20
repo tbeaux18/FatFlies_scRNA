@@ -16,6 +16,7 @@ This portion of the pipeline can be carried out in four steps
 
 ## Commands for setting up CELSEQ2 (work in progress)
 First, the configuration and experiment table must be initialized.
+
     new-configuration-file -o config.yaml
     new-experiment-table -o experiment_table.txt
 
