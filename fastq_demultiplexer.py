@@ -17,15 +17,11 @@ fastq_demultiplexer.py
 
 import os
 import pathlib
-import sys
 import argparse
 import logging
-import collections
-import HTSeq
+import numpy as np
 import pandas as pd
-import pprint as pp
 from Bio import SeqIO
-import pprint as pp
 
 
 
@@ -156,24 +152,28 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
         # cel-barcode is 6-mer
         fastq_r1_seq_hash = hash(fastq_r1_seq[6:12])
 
-        # idx = sample_sheet_df['fastq_r1_path'].apply(lambda x: sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash)
-        file_path = sample_sheet_df.loc[sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash, \
-                ['fastq_r1_path', 'fastq_r2_path', 'fastq_r1_und_path', 'fastq_r2_und_path']]
-        # r2_file_path = sample_sheet_df.loc[sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash, \
-        #                                        'fastq_r2_path']
+        match_row = sample_sheet_df.loc[\
+                    sample_sheet_df.barcode_hash \
+                    == fastq_r1_seq_hash].to_numpy().flatten()
+
+        mismatch_row = sample_sheet_df.loc[\
+                        sample_sheet_df.barcode_hash \
+                        != fastq_r1_seq_hash].to_numpy().flatten()
 
         fastq_r1_raw_byte = fastq_r1_record_db.get_raw(record[0])
         fastq_r2_raw_byte = fastq_r2_record_db.get_raw(record[1])
 
+        if match_row.any():
+            r1_file = open(str(match_row[6]), 'ab')
+            r2_file = open(str(match_row[7]), 'ab')
+            r1_file.write(fastq_r1_raw_byte)
+            r2_file.write(fastq_r2_raw_byte)
+        else:
+            r1_und_file = open(str(mismatch_row[8]), 'ab')
+            r2_und_file = open(str(mismatch_row[9]), 'ab')
+            r1_und_file.write(fastq_r1_raw_byte)
+            r2_und_file.write(fastq_r2_raw_byte)
 
-        if file_path.any():
-            print(file_path)
-        #     r1_file = open(str(r1_file_path), 'ab')
-        #     r2_file = open(str(r2_file_path), 'ab')
-        #     r1_file.write(fastq_r1_raw_byte)
-        #     r2_file.write(fastq_r2_raw_byte)
-        # else:
-        #     r1_und_file = open()
 
 
 def main():
@@ -192,4 +192,7 @@ def main():
     demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df)
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+    end = time.time()
+    print(end - start)
