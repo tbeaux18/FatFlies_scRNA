@@ -1,5 +1,5 @@
 # CELSEQ2 Workflow using STAR aligner
-## Goals:
+The Celseq2 pipeline can be carried out in four steps
 1. Build STAR index (done)
 2. Make config.yaml file (done)
 3. Create an experiment table
@@ -18,8 +18,8 @@
 
 
 ## Running away from server
-screen
-...
-Ctrl-a Ctrl-d
-screen -list
-screen -r
+    screen
+    ...
+    Ctrl-a Ctrl-d
+    screen -list
+    screen -r
