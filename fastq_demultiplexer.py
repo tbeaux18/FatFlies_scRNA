@@ -31,7 +31,7 @@ LOGGER.setLevel(logging.INFO)
 
 FORMATTER = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(message)s')
 
-FILE_HANDLER = logging.FileHandler("logs/fastq_demultiplex.log")
+FILE_HANDLER = logging.FileHandler("fastq_demultiplex.log")
 
 FILE_HANDLER.setFormatter(FORMATTER)
 
