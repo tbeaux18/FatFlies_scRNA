@@ -141,10 +141,10 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
     fastq_r2_record_db = SeqIO.index_db(fastq_r2_idx_db, fastq_r2, 'fastq')
 
 
-    for record in zip(fastq_r1_record_db, fastq_r2_record_db):
+    for record in fastq_r1_record_db:
 
         # use get_raw() for access to byte-like object
-        fastq_r1_seq = fastq_r1_record_db.get_raw(record[0]).decode().split('\n')[1]
+        fastq_r1_seq = fastq_r1_record_db.get_raw(record).decode().split('\n')[1]
 
         # parsing out UMI first 6 base pairs of read 1 sequence
         sample_sheet_df['umi_sequence'] = fastq_r1_seq[0:6]
@@ -161,8 +161,8 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
                         sample_sheet_df.barcode_hash \
                         != fastq_r1_seq_hash].to_numpy().flatten()
 
-        fastq_r1_raw_byte = fastq_r1_record_db.get_raw(record[0])
-        fastq_r2_raw_byte = fastq_r2_record_db.get_raw(record[1])
+        fastq_r1_raw_byte = fastq_r1_record_db.get_raw(record)
+        fastq_r2_raw_byte = fastq_r2_record_db.get_raw(record)
 
         if match_row.any():
             r1_file = open(str(match_row[6]), 'ab')
