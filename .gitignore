@@ -26,3 +26,9 @@
 
 # ignore compiled python
 *.pyc
+
+# yaml
+*.yaml
+
+# idx files
+*.idx
