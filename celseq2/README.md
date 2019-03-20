@@ -21,6 +21,7 @@ First, the configuration and experiment table must be initialized.
     new-experiment-table -o experiment_table.txt
 
 These files were edited to contain relevant parameters and file paths. See config.yaml and experiment_table.txt for more details. Finally, the celseq2 command is run.
+
     celseq2 --config-file ~/FatFlies_scRNA/celseq2/config.yaml \
     --experiment-table ~/FatFlies_scRNA/celseq2/experiment_table.txt \
     --output-dir ~/FatFlies_scRNA/celseq2/results \
