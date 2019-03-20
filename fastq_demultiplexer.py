@@ -16,44 +16,180 @@ fastq_demultiplexer.py
 """
 
 import os
+import pathlib
+import sys
+import argparse
 import logging
+import collections
 import HTSeq
-
 import pandas as pd
+import pprint as pp
+from Bio import SeqIO
+import pprint as pp
+
+
+
+LOGGER = logging.getLogger(__name__)
+
+LOGGER.setLevel(logging.INFO)
+
+FORMATTER = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(message)s')
+
+FILE_HANDLER = logging.FileHandler("logs/fastq_demultiplex.log")
+
+FILE_HANDLER.setFormatter(FORMATTER)
+
+LOGGER.addHandler(FILE_HANDLER)
+
+
+def arg_parser():
+    """ Argument input from command line """
+
+    parser = argparse.ArgumentParser(
+        description='Demultiplexes single cell RNA-seq FASTQs by group\n'
+    )
+    # add statistic file for logs
+    # parser.add_argument('-o', '--out-dir', metavar='DIRNAME', type=str, help='path to text file that has ftp links')
+    parser.add_argument('sample_sheet', type=str, help='Enter absolute/path/to/sample_sheet.csv')
+    parser.add_argument('fastq_r1', type=str, help='Enter absolute/path/to/fastq_read1')
+    parser.add_argument('fastq_r2', type=str, help='Enter absolute/path/to/fastq_read2')
+
+    return parser.parse_args()
+
+
+
+
+def detect_fastq_file(fastq):
+    """ takes fastq path and detects whether it is R1 or R2 """
+
+    LOGGER.info("Path to fastq %s", str(fastq))
+
+    # need to ensure that the path has no other R1 or R2 present
+    if 'R1' in fastq.upper():
+        return 1
+    elif 'R2' in fastq.upper():
+        return 2
+    return False
+        # log to file if this occurs
+
 
 
 def handle_sample_sheet(sample_sheet):
     """ takes sample sheet and returns a dict based on grouping. """
 
-    # Need to add a lot of checks to ensure data is correct
-    # may need to convert to dict rather than dataframe
+    try:
+        # create new directory that stores demultiplexed fastqs
+        os.mkdir('fastq_demultiplex')
+    except FileExistsError:
+        pass
 
-    exp_group_dict = {}
-
+    # load sample sheet into pandas dataframe
     sample_sheet_df = pd.read_csv(sample_sheet)
 
-    experiment_group_num = set([int(x) for x in sample_sheet_df['experiment_group']])
+    # instantiate new columns with default values
+    sample_sheet_df.assign(**{'barcode_count': 0, \
+                            'barcode_hash': None, \
+                            'umi_sequence': None, \
+                            'fastq_r1_path': None, \
+                            'fastq_r2_path': None})
 
-    sample_sheet_group = sample_sheet_df.groupby(['experiment_group'])
+    try:
+        for index, row in sample_sheet_df.iterrows():
 
-    # how would I access if i changed from dataframe to dict, probably better on memory
-    for condition in experiment_group_num:
-        exp_group_dict[condition] = sample_sheet_group.get_group(condition)
+            # creating hash values for barcode comparison
+            sample_sheet_df.at[index, 'barcode_hash'] = hash(row['barcode_sequence'])
 
-    return exp_group_dict
+            # initializing demultiplexed fastq files based on specified experiment group
+            fq_r1_name = './fastq_demultiplex/fastq_R1.group_{}.demultiplexed.fastq'.format(row['experiment_group'])
+            fq_r2_name = './fastq_demultiplex/fastq_R2.group_{}.demultiplexed.fastq'.format(row['experiment_group'])
+            fq_r1_und_name = './fastq_demultiplex/fastq_R1.group_{}.undetermined.demultiplexed.fastq'.format(row['experiment_group'])
+            fq_r2_und_name = './fastq_demultiplex/fastq_R2.group_{}.undetermined.demultiplexed.fastq'.format(row['experiment_group'])
+
+            # creating empty files to append to later
+            open(fq_r1_name, 'a+').close()
+            open(fq_r2_name, 'a+').close()
+            open(fq_r1_und_name, 'a+').close()
+            open(fq_r2_und_name, 'a+').close()
+
+            # using Path object to grab absolute path to store in df
+            fq_r1 = str(pathlib.Path(fq_r1_name).resolve())
+            fq_r2 = str(pathlib.Path(fq_r2_name).resolve())
+            fq_r1_und = str(pathlib.Path(fq_r1_und_name).resolve())
+            fq_r2_und = str(pathlib.Path(fq_r2_und_name).resolve())
+
+            sample_sheet_df.at[index, 'fastq_r1_path'] = fq_r1
+            sample_sheet_df.at[index, 'fastq_r2_path'] = fq_r2
+            sample_sheet_df.at[index, 'fastq_r1_und_path'] = fq_r1_und
+            sample_sheet_df.at[index, 'fastq_r2_und_path'] = fq_r2_und
+
+    except OSError as error:
+        # need to add more error handling
+        print(error)
 
 
-# class FastqDemultiplexer:
-#
-#     def __init__(self, barcode_index_file, sample_sheet, fastq_r1, fastq_r2):
-#         self.sample_sheet_file = sample_sheet
-#         self.fastq_r1 = fastq_r1
-#         self.fastq_r2 = fastq_r2
-#
-#
-#     def build_barcode_dict(self):
-#
-#         barcode_dict = {}
-#
-#         with open(self.barcode_index_file, 'rb') as bar_idx:
-#
+    return sample_sheet_df
+
+
+
+
+def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
+
+
+    # loads path of index db
+    fastq_r1_idx_db = './fastq_demultiplex/fastq_r1_idx_db.idx'
+    fastq_r2_idx_db = './fastq_demultiplex/fastq_r2_idx_db.idx'
+
+    # creates a sqllite3 index db
+    fastq_r1_record_db = SeqIO.index_db(fastq_r1_idx_db, fastq_r1, 'fastq')
+    fastq_r2_record_db = SeqIO.index_db(fastq_r2_idx_db, fastq_r2, 'fastq')
+
+
+    for record in zip(fastq_r1_record_db, fastq_r2_record_db):
+
+        # use get_raw() for access to byte-like object
+        fastq_r1_seq = fastq_r1_record_db.get_raw(record[0]).decode().split('\n')[1]
+
+        # parsing out UMI first 6 base pairs of read 1 sequence
+        sample_sheet_df['umi_sequence'] = fastq_r1_seq[0:6]
+
+        # parsing cel-barcode and creating a hash for fast comparison
+        # cel-barcode is 6-mer
+        fastq_r1_seq_hash = hash(fastq_r1_seq[6:12])
+
+        # idx = sample_sheet_df['fastq_r1_path'].apply(lambda x: sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash)
+        file_path = sample_sheet_df.loc[sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash, \
+                ['fastq_r1_path', 'fastq_r2_path', 'fastq_r1_und_path', 'fastq_r2_und_path']]
+        # r2_file_path = sample_sheet_df.loc[sample_sheet_df['barcode_hash'] == fastq_r1_seq_hash, \
+        #                                        'fastq_r2_path']
+
+        fastq_r1_raw_byte = fastq_r1_record_db.get_raw(record[0])
+        fastq_r2_raw_byte = fastq_r2_record_db.get_raw(record[1])
+
+
+        if file_path.any():
+            print(file_path)
+        #     r1_file = open(str(r1_file_path), 'ab')
+        #     r2_file = open(str(r2_file_path), 'ab')
+        #     r1_file.write(fastq_r1_raw_byte)
+        #     r2_file.write(fastq_r2_raw_byte)
+        # else:
+        #     r1_und_file = open()
+
+
+def main():
+    """ creates the tmp directories and splits the fastq into smaller
+        files for increased iteration
+    """
+
+    args = arg_parser()
+
+    sample_sheet = args.sample_sheet
+    fastq_r1 = args.fastq_r1
+    fastq_r2 = args.fastq_r2
+
+    sample_sheet_df = handle_sample_sheet(sample_sheet)
+
+    demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df)
+
+if __name__ == '__main__':
+    main()
