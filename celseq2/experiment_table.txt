@@ -1,0 +1,5 @@
+SAMPLE_NAME CELL_BARCODES_INDEX R1  R2
+fed-gfp-experiment_1    4,5,23,25   dnpf-LIB_S1_R1_001.fastq.gz     dnpf-LIB_S1_R2_001.fastq.gz
+fed-gfp-experiment_2    9,10,26,31  dnpf-LIB_S1_R1_001.fastq.gz     dnpf-LIB_S1_R2_001.fastq.gz
+starve-gfp-experiment_3 46,6,28,35  dnpf-LIB_S1_R1_001.fastq.gz     dnpf-LIB_S1_R2_001.fastq.gz
+starve-gfp-experiment_4 14,20,43,2  dnpf-LIB_S1_R1_001.fastq.gz     dnpf-LIB_S1_R2_001.fastq.gz
