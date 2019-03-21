@@ -141,6 +141,7 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
     fastq_r2_record_db = SeqIO.index_db(fastq_r2_idx_db, fastq_r2, 'fastq')
 
 
+    # only iterates through the @id of the seqrecord object in the sqllite db
     for record in fastq_r1_record_db:
 
         # use get_raw() for access to byte-like object
@@ -153,6 +154,9 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
         # cel-barcode is 6-mer
         fastq_r1_seq_hash = hash(fastq_r1_seq[6:12])
 
+
+        # probably faster to create a boolean index column and locate off that
+        # flattens numpy 2darray
         match_row = sample_sheet_df.loc[\
                     sample_sheet_df.barcode_hash \
                     == fastq_r1_seq_hash].to_numpy().flatten()
@@ -161,19 +165,35 @@ def demultiplex_fastq_files(fastq_r1, fastq_r2, sample_sheet_df):
                         sample_sheet_df.barcode_hash \
                         != fastq_r1_seq_hash].to_numpy().flatten()
 
+
+
+        # grabbing the raw bytes from sqllite db
         fastq_r1_raw_byte = fastq_r1_record_db.get_raw(record)
+
         fastq_r2_raw_byte = fastq_r2_record_db.get_raw(record)
 
+
+
         if match_row.any():
-            r1_file = open(str(match_row[6]), 'ab')
-            r2_file = open(str(match_row[7]), 'ab')
-            r1_file.write(fastq_r1_raw_byte)
-            r2_file.write(fastq_r2_raw_byte)
+
+            # open and write to respective group files if the hash barcode matches
+            with open(str(match_row[6]), 'ab') as fastq_r1_handle, \
+                open(str(match_row[7]), 'ab') as fastq_r2_handle:
+
+                fastq_r1_handle.write(fastq_r1_raw_byte)
+
+                fastq_r2_handle.write(fastq_r2_raw_byte)
+
+
         else:
-            r1_und_file = open(str(mismatch_row[8]), 'ab')
-            r2_und_file = open(str(mismatch_row[9]), 'ab')
-            r1_und_file.write(fastq_r1_raw_byte)
-            r2_und_file.write(fastq_r2_raw_byte)
+
+            # open and write to respective group files if hash barcode mismatches
+            with open(str(mismatch_row[8]), 'ab') as fastq_r1_undetermined_handle, \
+                open(str(mismatch_row[9]), 'ab') as fastq_r2_undetermined_handle:
+
+                fastq_r1_undetermined_handle.write(fastq_r1_raw_byte)
+
+                fastq_r2_undetermined_handle.write(fastq_r2_raw_byte)
 
 
 
