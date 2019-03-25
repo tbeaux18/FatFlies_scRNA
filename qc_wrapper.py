@@ -50,11 +50,8 @@ def build_fastqc_arg(*args):
 
     # leave kmer constant as 6 for cel-seq2
     # umis and barcodes are 6 bp long
-    fastqc_arg = """--extract --threads 4
-                    --kmers 6 --format fastq
-                    --adapters {}
-                    --contaminants {}
-                    --outdir {}""".format(*args)
+    fastqc_arg = "--extract --threads 4 --kmers 6 --format fastq" \
+                "--adapters {} --contaminants {} --outdir {}".format(*args)
 
     return fastqc_arg
 
@@ -114,6 +111,7 @@ def run_trim_galore(**kwargs):
                         --paired {fastq_read1} {fastq_read2}""".format(**kwargs)
 
     trimgalore_formatted_args = shlex.split(trimgalore_command)
+
     trimgalore_process = subprocess.Popen(trimgalore_formatted_args, \
                                             stdout=subprocess.PIPE, \
                                             stderr=subprocess.PIPE)
