@@ -20,7 +20,6 @@ def arg_parser():
     )
     parser.add_argument('-a', '--adapter_file', type=str, help='absolute path to the adapter file')
     parser.add_argument('-c', '--contam_file', type=str, help='absolute path to the contamination file')
-    parser.add_argument('-b', '--basename', type=str, help='basename to trimmed fastq files')
     parser.add_argument('fastq_r1', type=str, help='Enter absolute/path/to/fastq_read1')
     parser.add_argument('fastq_r2', type=str, help='Enter absolute/path/to/fastq_read2')
 
@@ -28,7 +27,77 @@ def arg_parser():
 
 
 
-def build_fastqc_arg(*args):
+def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
+    """ Takes a keyword dict and passes into the trimgalore command and calls
+        a process to begin while piping standard output and standard error.
+        constant_params:
+            -f/--format : fastq
+            --small_rna : will trim the following sequences from
+                            R1: TGGAATTCTCGG & R2: GATCGTCGGACT
+            -j/--cores : 4
+            -s/--stringency : 2
+        params:
+            trimgalore_dict (dict) : dict with all keywords and values for
+                    fastqc_args, basename, trim_output, fastq_read1, fastq_read2
+        returns:
+            None
+    """
+
+
+    cutadapt_output = 'cutadapt_output'
+
+    if not os.path.exists(cutadapt_output):
+        os.mkdir(cutadapt_output)
+
+    trimmed_read1_fastq = './cutadapt_output/cutadapt.trimmed.R1.fastq.gz'
+    trimmed_read2_fastq = './cutadapt_output/cutadapt.trimmed.R1.fastq.gz'
+
+    if celseq:
+        r1_adapter_sequence = 'TGGAATTCTCGG'
+        r2_adapter_sequence = 'GATCGTCGGACT'
+    else:
+        pass # fix later
+
+
+    cutadapt_keywords = ('read1_adapter', 'read2_adapter', \
+                        'read1_output_file', 'read2_output_file', \
+                        'fastq_read1', 'fastq_read2')
+
+    cutadapt_args = (r1_adapter_sequence, r2_adapter_sequence, \
+                    trimmed_read1_fastq, trimmed_read2_fastq, \
+                    fastq_read1, fastq_read2)
+
+    cutadapt_kwargs = dict(zip(cutadapt_keywords, cutadapt_args))
+
+    cutadapt_command = """cutadapt
+                        -j 4
+                        -a {read1_adapter}
+                        -A {read2_adapter}
+                        -m 12:20
+                        -o {read1_output_file}
+                        -p {read2_output_file}
+                        {fastq_read1}
+                        {fastq_read2}""".format(**cutadapt_kwargs)
+
+
+    cutadapt_formatted_args = shlex.split(cutadapt_command)
+    print("Running cutadapt.")
+
+    cutadapt_process = subprocess.Popen(cutadapt_formatted_args, \
+                                            stdout=subprocess.PIPE, \
+                                            stderr=subprocess.PIPE)
+    data_out, data_err = cutadapt_process.communicate()
+
+    with open('cutadapt-stdout.txt', 'ab') as output:
+        output.write(data_out)
+        output.write(data_err)
+
+
+    return trimmed_read1_fastq, trimmed_read2_fastq
+
+
+
+def run_fastqc(*args):
     """ Takes x number of args and formats to fastqc_arg for downstream input.
         No more than 3 args, only necessary to properly format trim_galore.
         const_params:
@@ -45,86 +114,27 @@ def build_fastqc_arg(*args):
     """
 
     # raises assertion error if not true
-    assert len(args) == 3, "3 args were not passed."
+    assert len(args) == 4, "4 args were not passed."
 
+    fastqc_out_dir = 'fastqc_run'
+    if not os.path.exists(fastqc_out_dir):
+        os.mkdir(fastqc_out_dir)
 
     # leave kmer constant as 6 for cel-seq2
     # umis and barcodes are 6 bp long
     # space at the end of the first string is crucial to fastqc operating
-    fastqc_arg = "--extract --threads 4 --kmers 6 --format fastq " \
-                "--adapters {} --contaminants {} --outdir {}".format(*args)
+    fastqc_command = "fastqc --extract --threads 4 --kmers 6 --format fastq " \
+                "--adapters {} --contaminants {} --outdir ./fastqc_run {} {}".format(*args)
 
-    return fastqc_arg
+    fastqc_formatted_args = shlex.split(fastqc_command)
+    print("Running FASTQC.")
+    fastqc_process = subprocess.Popen(fastqc_formatted_args, stdout=subprocess.PIPE, \
+                                                        stderr=subprocess.PIPE)
+    data_out, data_err = fastqc_process.communicate()
 
-
-
-def build_trim_dict(*args):
-    """ Builds the trim_galore kwarg dict to pass into the trim command function.
-        Only a max of 5 args should be passed, and order matters. Only pass absolute
-        paths, not optimized for relative paths.
-        Keeps fastqs zipped
-        params:
-            fastqc_arg (str) : fastqc_arg command to run fastqc
-            basename (str) : basename of trimmed fastq out put
-            trim_output (str) : /path/to/trim_output
-            fastq_read1 (str) : /path/to/untrimmed_fastq_read1.fastq.gz
-            fastq_read2 (str) : /path/to/untrimmed_fastq_read2.fastq.gz
-        returns:
-            trimgalore_dict (dict)
-    """
-
-    # raise error if not true
-    assert len(args) == 5, "5 args were not passed."
-
-    # constant keyword args
-    trim_galore_keys = ('fastqc_arg', 'basename', 'trim_output', 'fastq_read1', 'fastq_read2')
-
-    # zips the keyword and arg paths into a dict for downstream analysis
-    # order is imperative
-    trimgalore_dict = dict(zip(trim_galore_keys, args))
-
-    return trimgalore_dict
-
-
-
-def run_trim_galore(**kwargs):
-    """ Takes a keyword dict and passes into the trimgalore command and calls
-        a process to begin while piping standard output and standard error.
-        constant_params:
-            -f/--format : fastq
-            --small_rna : will trim the following sequences from
-                            R1: TGGAATTCTCGG & R2: GATCGTCGGACT
-            -j/--cores : 4
-            -s/--stringency : 2
-        params:
-            trimgalore_dict (dict) : dict with all keywords and values for
-                    fastqc_args, basename, trim_output, fastq_read1, fastq_read2
-        returns:
-            None
-    """
-
-    trimgalore_command = """trim_galore --fastqc_args "{fastqc_arg}"
-                        --basename {basename}
-                        --small_rna
-                        -j 4
-                        --stringency 2
-                        -o {trim_output}
-                        --paired {fastq_read1} {fastq_read2}""".format(**kwargs)
-
-    trimgalore_formatted_args = shlex.split(trimgalore_command)
-
-    print("Running trim_galore.")
-
-    trimgalore_process = subprocess.Popen(trimgalore_formatted_args, \
-                                            stdout=subprocess.PIPE, \
-                                            stderr=subprocess.PIPE)
-    data_out, data_err = trimgalore_process.communicate()
-
-    with open('trimgalore-stdout.txt', 'ab') as output:
+    with open('fastqc-stdout.txt', 'wb') as output:
         output.write(data_out)
         output.write(data_err)
-
-
 
 
 def main():
@@ -136,34 +146,16 @@ def main():
     # setting command line arguments to be passed
     fastq_read1 = args.fastq_r1
     fastq_read2 = args.fastq_r2
-    basename = args.basename
     adapter_file = args.adapter_file
     contam_file = args.contam_file
 
-
-    # create the fastqc_output path
-    # need to track directory structure
-    fastqc_out_dir = 'trimgal_fastqc'
-    trimgal_out_dir = 'trimgal_output'
-    if not os.path.exists(fastqc_out_dir):
-        os.mkdir(fastqc_out_dir)
-        os.mkdir(trimgal_out_dir)
-
-
-    fastqc_output = './trimgal_fastqc'
-    trim_output = './trimgal_output'
-
-    # order is imperative
-    # 1) adapter_file 2) contam_file 3) fastqc_output path
-    fastqc_out = build_fastqc_arg(adapter_file, contam_file, fastqc_output)
-
-
-    # 1) fastqc_out path 2) basename 3) trim output dir 4) fastq R1 5) fastq R2
-    trim_kwarg = build_trim_dict(fastqc_out, basename, trim_output, fastq_read1, fastq_read2)
-
     # executes the script
     # need to include error handling and log outputs
-    run_trim_galore(**trim_kwarg)
+    r1_trim_fastq, r2_trim_fastq = run_cutadapt(fastq_read1, fastq_read2)
+
+    # order is imperative
+    # 1) adapter_file 2) contam_file 3) read1 trimmed path 4) read2 trimmed path
+    run_fastqc(adapter_file, contam_file, r1_trim_fastq, r2_trim_fastq)
 
 if __name__ == '__main__':
     main()
