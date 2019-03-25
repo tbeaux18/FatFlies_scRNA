@@ -97,6 +97,7 @@ def run_trim_galore(**kwargs):
             --small_rna : will trim the following sequences from
                             R1: TGGAATTCTCGG & R2: GATCGTCGGACT
             -j/--cores : 4
+            -s/--stringency : 2
         params:
             trimgalore_dict (dict) : dict with all keywords and values for
                     fastqc_args, basename, trim_output, fastq_read1, fastq_read2
@@ -108,6 +109,7 @@ def run_trim_galore(**kwargs):
                         --basename {basename}
                         --small_rna
                         -j 4
+                        -s 2
                         -o {trim_output}
                         --paired {fastq_read1} {fastq_read2}""".format(**kwargs)
 
@@ -140,7 +142,7 @@ def main():
 
     # create the fastqc_output path
     # need to track directory structure
-    fastqc_out_dir = 'trim_galore_fastqc'
+    fastqc_out_dir = 'trimgal_fastqc'
     trimgal_out_dir = 'trimgal_output'
     if not os.path.exists(fastqc_out_dir):
         os.mkdir(fastqc_out_dir)
