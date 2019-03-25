@@ -48,7 +48,7 @@ def build_fastqc_arg(*args):
     # raises assertion error if not true
     assert len(args) == 3, "3 args were not passed."
 
-    fastqc_arg = "--extract -t 4 -k 6 -a {} -c {} -o {}".format(*args)
+    fastqc_arg = "--extract -t 4 -k 6 -f fastq -a {} -c {} -o {}".format(*args)
 
     return fastqc_arg
 
@@ -99,7 +99,6 @@ def run_trim_galore(**kwargs):
     """
 
     trimgalore_command = """trim_galore --fastqc_args "{fastqc_arg}"
-                        -f fastq
                         --basename {basename}
                         --small_rna
                         -j 4
