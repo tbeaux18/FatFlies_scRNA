@@ -119,7 +119,7 @@ def run_trim_galore(**kwargs):
                                             stderr=subprocess.PIPE)
     data_out, data_err = trimgalore_process.communicate()
 
-    with open('trimgalore-stdout.txt', 'a') as output:
+    with open('trimgalore-stdout.txt', 'ab') as output:
         output.write(data_out)
         output.write(data_err)
 
