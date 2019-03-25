@@ -98,14 +98,13 @@ def run_trim_galore(**kwargs):
             None
     """
 
-    trimgalore_command = """trim_galore
-                    --fastqc_args \"{fastqc_arg}\"
-                    -f fastq
-                    --basename {basename}
-                    --small_rna
-                    -j 4
-                    -o {trim_output}
-                    --paired {fastq_read1} {fastq_read2}""".format(**kwargs)
+    trimgalore_command = "trim_galore \
+                        --fastqc_args \"{fastqc_arg}\" \
+                        -f fastq --basename {basename} \
+                        --small_rna \
+                        -j 4 \
+                        -o {trim_output} \
+                        --paired {fastq_read1} {fastq_read2}".format(**kwargs)
 
     trimgalore_formatted_args = shlex.split(trimgalore_command)
 
