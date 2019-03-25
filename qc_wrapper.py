@@ -20,7 +20,6 @@ def arg_parser():
     )
     parser.add_argument('-a', '--adapter_file', type=str, help='absolute path to the adapter file')
     parser.add_argument('-c', '--contam_file', type=str, help='absolute path to the contamination file')
-    parser.add_argument('-o', '--trim_output', metavar='DIRNAME', type=str, help='absolute path to the trimmed output directory')
     parser.add_argument('-b', '--basename', type=str, help='basename to trimmed fastq files')
     parser.add_argument('fastq_r1', type=str, help='Enter absolute/path/to/fastq_read1')
     parser.add_argument('fastq_r2', type=str, help='Enter absolute/path/to/fastq_read2')
@@ -48,7 +47,14 @@ def build_fastqc_arg(*args):
     # raises assertion error if not true
     assert len(args) == 3, "3 args were not passed."
 
-    fastqc_arg = "--extract -t 4 -k 6 -f fastq -a {} -c {} -o {}".format(*args)
+
+    # leave kmer constant as 6 for cel-seq2
+    # umis and barcodes are 6 bp long
+    fastqc_arg = """--extract --threads 4
+                    --kmers 6 --format fastq
+                    --adapters {}
+                    --contaminants {}
+                    --outdir {}""".format(*args)
 
     return fastqc_arg
 
@@ -111,7 +117,9 @@ def run_trim_galore(**kwargs):
                                             stderr=subprocess.PIPE)
     data_out, data_err = trimgalore_process.communicate()
 
-    print(data_out, data_err)
+    with open('trimgalore-stdout.txt', 'a') as output:
+        output.write(data_out)
+        output.write(data_err)
 
 
 
@@ -125,7 +133,6 @@ def main():
     # setting command line arguments to be passed
     fastq_read1 = args.fastq_r1
     fastq_read2 = args.fastq_r2
-    trim_output = args.trim_output
     basename = args.basename
     adapter_file = args.adapter_file
     contam_file = args.contam_file
@@ -134,11 +141,14 @@ def main():
     # create the fastqc_output path
     # need to track directory structure
     fastqc_out_dir = 'trim_galore_fastqc'
+    trimgal_out_dir = 'trimgal_output'
     if not os.path.exists(fastqc_out_dir):
         os.mkdir(fastqc_out_dir)
+        os.mkdir(trimgal_out_dir)
 
 
-    fastqc_output = './trim_galore_fastqc'
+    fastqc_output = './trimgal_fastqc'
+    trim_output = './trimgal_output'
 
     # order is imperative
     # 1) adapter_file 2) contam_file 3) fastqc_output path
