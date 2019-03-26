@@ -43,15 +43,20 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
             None
     """
 
-
+    # ouput directory should be $HOME/FatFlies_scRNA/cutadapt_output
     cutadapt_output = 'cutadapt_output'
 
     if not os.path.exists(cutadapt_output):
         os.mkdir(cutadapt_output)
 
-    trimmed_read1_fastq = './cutadapt_output/cutadapt.trimmed.R1.fastq.gz'
-    trimmed_read2_fastq = './cutadapt_output/cutadapt.trimmed.R1.fastq.gz'
 
+    # need to fix how output fastqs are named
+    # TODO include basename param
+    trimmed_read1_fastq = './cutadapt_output/cutadapt.trimmed.R1.fastq.gz'
+    trimmed_read2_fastq = './cutadapt_output/cutadapt.trimmed.R2.fastq.gz'
+
+
+    # should always be true, but need to consider case if library prep changes
     if celseq:
         r1_adapter_sequence = 'TGGAATTCTCGG'
         r2_adapter_sequence = 'GATCGTCGGACT'
@@ -59,6 +64,7 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
         pass # fix later
 
 
+    # cutadapt keywords to zip into a kwarg for more accurate processing
     cutadapt_keywords = ('read1_adapter', 'read2_adapter', \
                         'read1_output_file', 'read2_output_file', \
                         'fastq_read1', 'fastq_read2')
@@ -68,6 +74,8 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
                     fastq_read1, fastq_read2)
 
     cutadapt_kwargs = dict(zip(cutadapt_keywords, cutadapt_args))
+
+
 
     cutadapt_command = """cutadapt
                         -j 4
@@ -99,18 +107,21 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
 
 def run_fastqc(*args):
     """ Takes x number of args and formats to fastqc_arg for downstream input.
-        No more than 3 args, only necessary to properly format trim_galore.
+        No more than 4 args, only necessary to properly format fastqc.
         const_params:
             --extract : auto unzip output files
             -t/--threads : 4
             -k/--kmer : 6
+            -f/--format : fastq
+            -o/--outdir : ./path/to/output needs to be created before running
         params:
             adapter (str) : ab/path/to/adapter_file
             contam (str) : ab/path/to/contam_file
-            fastqc_out (str) : ab/path/to/fastqc_output
-                                requires directory to be made
+            fastq_read1 (str) : ab/path/to/fastq_read1
+            fastq_read2 (str) : ab/path/to/fastq_read2
+
         returns:
-            fastqc_arg (str) : full formatted str object for fastqc
+            None
     """
 
     # raises assertion error if not true
