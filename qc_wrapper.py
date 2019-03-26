@@ -18,8 +18,6 @@ def arg_parser():
     parser = argparse.ArgumentParser(
         description='Python3 wrapper for quality control on single cell RNA-seq'
     )
-    parser.add_argument('-a', '--adapter_file', type=str, help='absolute path to the adapter file')
-    parser.add_argument('-c', '--contam_file', type=str, help='absolute path to the contamination file')
     parser.add_argument('fastq_r1', type=str, help='Enter absolute/path/to/fastq_read1')
     parser.add_argument('fastq_r2', type=str, help='Enter absolute/path/to/fastq_read2')
 
@@ -78,7 +76,7 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
 
 
     cutadapt_command = """cutadapt
-                        -j 4
+                        -j 8
                         -a {read1_adapter}
                         -A {read2_adapter}
                         -m 12:20
@@ -105,7 +103,7 @@ def run_cutadapt(fastq_read1, fastq_read2, celseq=True):
 
 
 
-def run_fastqc(*args):
+def run_fastqc(trimmed_read1_fastq, trimmed_read2_fastq):
     """ Takes x number of args and formats to fastqc_arg for downstream input.
         No more than 4 args, only necessary to properly format fastqc.
         const_params:
@@ -124,8 +122,6 @@ def run_fastqc(*args):
             None
     """
 
-    # raises assertion error if not true
-    assert len(args) == 4, "4 args were not passed."
 
     fastqc_out_dir = 'fastqc_run'
     if not os.path.exists(fastqc_out_dir):
@@ -134,8 +130,8 @@ def run_fastqc(*args):
     # leave kmer constant as 6 for cel-seq2
     # umis and barcodes are 6 bp long
     # space at the end of the first string is crucial to fastqc operating
-    fastqc_command = "fastqc --extract --threads 4 --kmers 6 --format fastq " \
-                "--adapters {} --contaminants {} --outdir ./fastqc_run {} {}".format(*args)
+    fastqc_command = "fastqc --extract --threads 8 --kmers 6 --format fastq " \
+                "--outdir ./fastqc_run {} {}".format(trimmed_read1_fastq, trimmed_read2_fastq)
 
     fastqc_formatted_args = shlex.split(fastqc_command)
     print("Running FASTQC.")
@@ -157,16 +153,14 @@ def main():
     # setting command line arguments to be passed
     fastq_read1 = args.fastq_r1
     fastq_read2 = args.fastq_r2
-    adapter_file = args.adapter_file
-    contam_file = args.contam_file
 
     # executes the script
     # need to include error handling and log outputs
     r1_trim_fastq, r2_trim_fastq = run_cutadapt(fastq_read1, fastq_read2)
 
     # order is imperative
-    # 1) adapter_file 2) contam_file 3) read1 trimmed path 4) read2 trimmed path
-    run_fastqc(adapter_file, contam_file, r1_trim_fastq, r2_trim_fastq)
+    # 1) read1 trimmed path 2) read2 trimmed path
+    run_fastqc(r1_trim_fastq, r2_trim_fastq)
 
 if __name__ == '__main__':
     main()
