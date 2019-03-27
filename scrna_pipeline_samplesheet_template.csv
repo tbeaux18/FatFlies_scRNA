@@ -9,7 +9,6 @@ Annotation,/path/to/annotation_file.gtf,,,
 [SETTINGS],,,,
 Adapter,TGGAATTCTCGG,GATCGTCGGACT,,
 ,,,,
-,,,,
 [DATA],,,,
 cell_id,sample_name,barcode_index,barcode_sequence,experiment_group
 1,F1.1,cel-4,AGCTTC,1

@@ -6,8 +6,10 @@ samplesheet_parser.py
 
 """
 
+import os
 import sys
 import csv
+import pandas as pd
 
 
 class SampleSheetParser:
@@ -39,9 +41,66 @@ class SampleSheetParser:
         self.annotation = None
         self.adapter_3 = None
         self.adapter_5 = None
-        self.barcode_seq = []
-        # create dict attribute that holds info after data
-        
+        self.cell_data = None
+
+
+    def parse_sample_sheet(self):
+        """ parsing sample sheet and instantiating attributes """
+
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            line = csv_handle.readline()
+
+            while line:
+
+                if line.startswith('[HEADER]'):
+                    header_offset = csv_handle.tell()
+                if line.startswith('[SETTINGS]'):
+                    settings_offset = csv_handle.tell()
+                if line.startswith('[DATA]'):
+                    data_offset = csv_handle.tell()
+
+                line = csv_handle.readline()
+
+            # create header byte load
+            byte_load = (settings_offset - header_offset) - 28
+
+            # change position to header offset
+            csv_handle.seek(header_offset)
+            for line in csv_handle.readlines(byte_load):
+                line_lst = line.split(',')
+                if line_lst[0] == 'Fastq_Read1':
+                    self.fastq_read1 = line_lst[1]
+                if line_lst[0] == 'Fastq_Read2':
+                    self.fastq_read2 = line_lst[1]
+                if line_lst[0] == 'Ref_genome':
+                    self.ref_genome = line_lst[1]
+                if line_lst[0] == 'Annotation':
+                    self.annotation = line_lst[1]
+
+            # changing file position to adapter offset
+            csv_handle.seek(settings_offset)
+
+            # setting adapter attributes
+            adapter_list = csv_handle.readline().split(',')
+            self.adapter_3 = adapter_list[1]
+            self.adapter_5 = adapter_list[2]
+
+            # changing file position to data offset to load into dataframe
+            csv_handle.seek(data_offset)
+
+            # pandas dataframe for easy
+            self.cell_data = pd.read_csv(csv_handle)
+
+    def create_adapter_whitelist(self):
+        """ create barcode_whitelist text file """
+        self.cell_data.to_csv('barcode_white.txt', \
+                                sep='\n', \
+                                columns=['barcode_sequence'], \
+                                header=False, \
+                                index=False)
+
+
     def return_read1(self):
         """ return fastq_read1 path """
         return self.fastq_read1
@@ -68,17 +127,16 @@ class SampleSheetParser:
 
     def return_barcode_seq(self):
         """ return cell barcode list """
-        return self.barcode_seq
-
-
-
-
-
+        return self.cell_data
 
 
 
 def main():
-    pass
+    """ run main for testing """
 
+    sample_object = SampleSheetParser('scrna_pipeline_samplesheet_template.csv')
+
+    sample_object.parse_sample_sheet()
+    sample_object.create_adapter_whitelist()
 if __name__ == '__main__':
     main()
