@@ -7,8 +7,6 @@ samplesheet_parser.py
 """
 
 import os
-import sys
-import csv
 import pandas as pd
 
 
@@ -92,6 +90,7 @@ class SampleSheetParser:
             # pandas dataframe for easy
             self.cell_data = pd.read_csv(csv_handle)
 
+
     def create_adapter_whitelist(self):
         """ create barcode_whitelist text file """
         self.cell_data.to_csv('barcode_white.txt', \
@@ -137,6 +136,7 @@ def main():
     sample_object = SampleSheetParser('scrna_pipeline_samplesheet_template.csv')
 
     sample_object.parse_sample_sheet()
+
     sample_object.create_adapter_whitelist()
 if __name__ == '__main__':
     main()
