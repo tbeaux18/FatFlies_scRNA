@@ -41,7 +41,7 @@ class SampleSheetParser:
 
     def __init__(self, sample_sheet):
         self.sample_sheet = sample_sheet
-        self.path_info = {}
+        self.path_info = {'trimmed_r1': None, 'trimmed_r2': None}
         self.adapter = {}
         self.cell_data = None
 
@@ -69,7 +69,6 @@ class SampleSheetParser:
 
                 line = csv_handle.readline()
 
-
             # hacked way of parsing this csv, need to handle better
             # create header byte load
             byte_load = (settings_offset - header_offset) - 28
@@ -92,6 +91,19 @@ class SampleSheetParser:
 
                 if line_lst[0].lower() == 'annotation':
                     self.path_info['annotation'] = line_lst[1]
+
+                if line_lst[0].lower() == 'basename':
+                    self.path_info['basename'] = line_lst[1]
+
+            # setting trimmed fastq file paths
+            # may need to fix paths
+            # trimmed fastq goes to current directory, will need to find it
+            # may not be able to use relative paths in docker
+            self.path_info['trimmed_r1'] = './{}.trimmed.R1.fastq.gz'.format(\
+                                                    self.path_info['basename'])
+
+            self.path_info['trimmed_r2'] = './{}.trimmed.R2.fastq.gz'.format(\
+                                                    self.path_info['basename'])
 
             # changing file position to settings/adapter offset
             csv_handle.seek(settings_offset)
@@ -136,7 +148,6 @@ class SampleSheetParser:
 def main():
     """ run main for testing """
     pass
-
 
 if __name__ == '__main__':
     main()
