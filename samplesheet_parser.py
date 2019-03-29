@@ -75,6 +75,10 @@ class SampleSheetParser:
                     self.ref_genome = line_lst[1]
                 if line_lst[0] == 'Annotation':
                     self.annotation = line_lst[1]
+                if line_lst[0] == "Test":
+                    self.test_groups = line_lst[1]
+                if line_lst[0] == "Control":
+                    self.test_groups = line_list[1]
 
             # changing file position to adapter offset
             csv_handle.seek(settings_offset)
