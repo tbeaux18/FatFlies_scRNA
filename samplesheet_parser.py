@@ -146,5 +146,8 @@ def main():
     sample_object.parse_sample_sheet()
 
     sample_object.create_adapter_whitelist()
+
+    sample_object.create_design_file()
+
 if __name__ == '__main__':
     main()
