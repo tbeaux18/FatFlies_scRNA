@@ -78,7 +78,7 @@ class SampleSheetParser:
                 if line_lst[0] == "Test":
                     self.test_groups = line_lst[1]
                 if line_lst[0] == "Control":
-                    self.test_groups = line_list[1]
+                    self.control_groups = line_list[1]
 
             # changing file position to adapter offset
             csv_handle.seek(settings_offset)
@@ -127,6 +127,14 @@ class SampleSheetParser:
     def return_annotation(self):
         """ return annotation gtf file path """
         return self.annotation
+    
+    def return_test_groups(self):
+        """ return test group names """
+        return self.test_groups
+    
+    def return_control_groups(self):
+        """ return control group names """
+        return self.control_groups
 
     def return_adapter_3(self):
         """ return 3' adapter sequence """
