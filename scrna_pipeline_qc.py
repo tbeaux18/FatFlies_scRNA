@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
 """
 @authors: Timothy Baker
+@version: 1.0.0
 
+scrna_pipeline_qc.py
 
-scrna_pipeline.py
+Script takes in sample sheet and thread count, creates a SampleSheetParser object
+which stores all information from the sample sheet. Using the information,
+quality control is performed on the raw data, and trimmed data. There has been no
+implementation of error handling, or parsing the output log files before
+continuing onto the next step.
 
-script runs the main pipeline
+TODO:
+    Parsing log files
+    Error handling
+    Path name control
+
+Dependencies:
+    python3
+    samplesheet_parser.py must be in same root directory
+    fastqc
+    cutadapt -- installed for python3 due to multithreading
 
 """
 
 import os
-import csv
 import shlex
 import argparse
 import subprocess
@@ -37,15 +51,10 @@ if not os.path.exists(TRIMMED_FASTQC_OUTPUT):
 
 
 LOGGER = logging.getLogger(__name__)
-
 LOGGER.setLevel(logging.INFO)
-
 FORMATTER = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(message)s')
-
 FILE_HANDLER = logging.FileHandler("logs/qc_log.log")
-
 FILE_HANDLER.setFormatter(FORMATTER)
-
 LOGGER.addHandler(FILE_HANDLER)
 
 
@@ -188,7 +197,9 @@ def run_cutadapt(**kwargs):
 
 
 def main():
-    """ runs main """
+    """ takes command line args, creates SampleSheetParser object, and runs
+        quality control
+    """
 
     args = arg_parser()
 
@@ -201,13 +212,17 @@ def main():
     sample_obj = SampleSheetParser(sample_sheet)
 
     sample_obj.parse_sample_sheet()
+    LOGGER.info("Parsed sample sheet.")
+
+    # creating barcode white list text file for zUMI
+    sample_obj.create_adapter_whitelist()
+    LOGGER.info("Created Barcode whitelist for zUMI.")
 
     # dict contains all relevant file paths
     file_path_info = sample_obj.return_path_info()
 
     # dict contains adapter trimming sequences
     adapter_info = sample_obj.return_path_info()
-
 
 
     initial_fastqc_kwarg = build_fastqc_args(threads, \
@@ -238,6 +253,7 @@ def main():
     LOGGER.info("Building trimmed fastqc dictionary: %s", trimmed_fastqc_kwarg)
     LOGGER.info("Running FASTQC on trimmed data.")
     run_fastqc(**trimmed_fastqc_kwarg)
+
 
 
 if __name__ == '__main__':
