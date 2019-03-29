@@ -102,7 +102,7 @@ class SampleSheetParser:
     def create_design_file(self):
         """ create design_matrix text file """
         self.cell_data.to_csv('design_matrix.txt', \
-                                sep="\n", \
+                                sep="\t", \
                                 columns=['sample_name','barcode_sequence','experiment_group'],
                                 header=False,
                                 index=False)
