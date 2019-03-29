@@ -75,6 +75,10 @@ class SampleSheetParser:
                     self.ref_genome = line_lst[1]
                 if line_lst[0] == 'Annotation':
                     self.annotation = line_lst[1]
+                if line_lst[0] == "Test":
+                    self.test_groups = line_lst[1]
+                if line_lst[0] == "Control":
+                    self.test_groups = line_list[1]
 
             # changing file position to adapter offset
             csv_handle.seek(settings_offset)
@@ -102,7 +106,7 @@ class SampleSheetParser:
     def create_design_file(self):
         """ create design_matrix text file """
         self.cell_data.to_csv('design_matrix.txt', \
-                                sep="\n", \
+                                sep="\t", \
                                 columns=['sample_name','barcode_sequence','experiment_group'],
                                 header=False,
                                 index=False)
@@ -146,5 +150,8 @@ def main():
     sample_object.parse_sample_sheet()
 
     sample_object.create_adapter_whitelist()
+
+    sample_object.create_design_file()
+
 if __name__ == '__main__':
     main()
