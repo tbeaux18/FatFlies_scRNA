@@ -1,0 +1,92 @@
+# start from base
+FROM ubuntu:18.04
+MAINTAINER Timothy Baker <tbaker8@luc.edu>
+# tag as scrna:ubuntu:18.04
+
+# installing system package dependencies for various tools
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    autoconf \
+    automake \
+    make \
+    gcc \
+    perl \
+    zlib1g-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libcurl4-gnutls-dev \
+    libssl-dev \
+    pip \
+    bash \
+    git \
+    curl \
+    wget \
+    gunzip \
+    unzip \
+    pigz \
+
+
+# Installing java on ubuntu
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    add-apt-repository ppa:webupd8team/java && \
+    apt-get install -y \
+    oracle-java8-installer \
+    oracle-java8-set-default \
+
+
+# Installing python on ubuntu
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev && \
+    ln -s /usr/bin/python3 /usr/local/bin/python3 && \
+    python3 -m pip install -r requirements.txt # need to add requirments path
+
+
+# install STAR aligner
+RUN \
+  cd /usr/local/bin && \
+  TARBALL=2.7.0f.tar.gz && \
+  NAME=STAR-2.7.0f && \
+  wget -P /usr/local/bin/star https://github.com/alexdobin/STAR/archive/${TARBALL} && \
+  tar -xzf ${TARBALL} /usr/local/bin/star/${TARBALL} -C /usr/local/bin/star && \
+  make STAR -C /usr/local/bin/star/${NAME}/source
+
+
+# Need to make sure JAVA installed correctly
+# FastQC
+RUN \
+  URL=http://www.bioinformatics.babraham.ac.uk/projects/fastqc \
+  && VER=0.11.8 \
+  && NAME=fastqc_v${VER} \
+  && wget -O /fastqc_tmp/${NAME}.zip ${URL}/${NAME}.zip \
+  && unzip /fastqc_tmp/${NAME}.zip -d /fastqc_tmp/ \
+  && chmod -R 755 /fastqc_tmp/ \
+  && ln -s /fastqc_tmp/FastQC/fastqc /usr/local/bin/fastqc \
+  && rm -rf /fastqc_tmp/${NAME}.zip \
+  && cd /
+
+
+# install htslib 1.9
+RUN \
+  wget -c https://github.com/samtools/htslib/archive/1.9.tar.gz && \
+  tar -zxvf 1.9.tar.gz && \
+  mv htslib-1.9 htslib && \
+  cd htslib && \
+  autoreconf && \
+  ./configure && \
+  make && \
+  make install
+
+
+# installing samtools 1.9
+RUN \
+  wget -c https://github.com/samtools/samtools/archive/1.9.tar.gz && \
+  tar -zxvf 1.9.tar.gz && \
+  cd samtools-1.9 && \
+  make && \
+  make install
