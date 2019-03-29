@@ -27,6 +27,7 @@ set1 <- RUVg(set, spikes, k=1)
 pData(set1) 
 
 ## DE analysis using negative binomial GLM approach (edgeR)
+## TODO: Iterate through list of test & control groups and re-run differential expression
 design <- model.matrix(~x + W_1, data=pData(set1))
 y <- DGEList(counts=counts(set1), group=x)
 y <- calcNormFactors(y, method="upperquartile")
