@@ -222,7 +222,7 @@ def main():
     file_path_info = sample_obj.return_path_info()
 
     # dict contains adapter trimming sequences
-    adapter_info = sample_obj.return_path_info()
+    adapter_info = sample_obj.return_adapters()
 
 
     initial_fastqc_kwarg = build_fastqc_args(threads, \
