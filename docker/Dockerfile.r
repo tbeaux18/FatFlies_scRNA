@@ -62,8 +62,8 @@ RUN apt-get update \
 # will move this up after ensuring cairo installation works
 RUN apt-get update \
   && apt-get -y install \
-  libcairo2-dev
-  libxt-dev
+  libcairo2-dev \
+  libxt-dev 
 
 # installing R packages for zUMI to run
 RUN \
