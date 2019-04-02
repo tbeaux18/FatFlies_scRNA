@@ -4,6 +4,12 @@
 
 samplesheet_parser.py
 
+04/01/2019:
+        - Broke out original parse_sample_sheet() method to smaller
+            parsing functions.
+        - included new attributes for downstream configuration for zUMI
+            and differential expression inputs
+        - need to handle parsing a lot better; perhaps break into subclasses
 """
 
 import pandas as pd
@@ -16,6 +22,8 @@ class SampleSheetParser:
     format and holds all instantiated paths.
 
     TODO:
+        - fix diff_exp input, can only accept concatenated numbers
+            and turns them into a list of strings
         - implement logging
         - implement more secure error handling especially if sample sheet changes
         - devise better parsing methods
@@ -25,61 +33,107 @@ class SampleSheetParser:
         sample_sheet : ab/path/to/sample_sheet.csv
 
     attributes:
+        offset_pos : dict of offset positions for better troubleshooting of each [VALUE]
+        header_info : dict of header info date, run_name, library_prep, basename
         path_info : dict of paths fastq_r1, fastq_r2, ref.fa, transcript.gtf
+        zumi_input : dict of zumi params that will be added to config file, include
+                        bc_filter_num_bases, bc_filter_phred, bc_ham_dist
+                        umi_filter_num_bases, umi_filter_phred, umi_ham_dist
+                        zum_start_stage
+        diff_input : dict of condition groups to use during differential expression
         adapters: dict of 5' and 3' adapter sequences for trimming
-        barcode_seq : pandas dataframe of experiment design information and barcodes
+        cell_data : pandas dataframe of experiment design information and barcodes
 
     methods:
-        parse_sample_sheet() : parses sample sheet and instantiates the attributes
+        locate_offsets() : finds each [VALUE] offset position
+        parse_sample_sheet_header() : stores header info
+        parse_sample_sheet_zumi() : stores zumi input config info
+        parse_sample_sheet_diffexp() : stores info for diff expression
+        parse_sample_sheet_adapters() : stores adapter info for trimming
+        parse_sample_sheet_data() : stores cell data
         create_adapter_whitelist() : creates the barcode white list for zUMI from barcode_seq dict
+        return_offsets() : returns offset position dict
+        return_header_info() : returns header info
+        return_zumi_input() : returns zumi config input info
+        return_diff_input() : returns diff expression input info
         return_path_info() : returns path_info attr dict
-        return_adapters() : return adapters dict
-        return_barcode_seq() : returns pandas dataframe
-
+        return_adapters() : return adapters dict for trimming
+        return_cell_data() : returns pandas dataframe of cell info
 
     """
 
     def __init__(self, sample_sheet):
         self.sample_sheet = sample_sheet
-        self.path_info = {'trimmed_r1': None, 'trimmed_r2': None}
+        self.offset_pos = {}
+        self.header_info = {}
+        self.path_info = {}
+        self.zumi_input = {}
+        self.diff_input = {}
         self.adapter = {}
         self.cell_data = None
 
 
-    def parse_sample_sheet(self):
-        """ parsing sample sheet and instantiating attributes """
-
+    def locate_offsets(self):
+        """ parse sample sheet and grab offset positions of bracketed names """
         with open(self.sample_sheet, 'r') as csv_handle:
 
             line = csv_handle.readline()
 
             while line:
 
-                # grabbing HEADER position
+                # grabbing header position
                 if line.startswith('[HEADER]'):
-                    header_offset = csv_handle.tell()
+                    self.offset_pos['header_offset'] = csv_handle.tell()
+
+                # grabbing zumi position
+                if line.startswith('[ZUMI]'):
+                    self.offset_pos['zumi_offset'] = csv_handle.tell()
+
+                # grabbing diff_exp position
+                if line.startswith('[DIFF_EXP]'):
+                    self.offset_pos['diff_offset'] = csv_handle.tell()
 
                 # grabbing setting position
-                if line.startswith('[SETTINGS]'):
-                    settings_offset = csv_handle.tell()
+                if line.startswith('[ADAPTERS]'):
+                    self.offset_pos['adapters_offset'] = csv_handle.tell()
 
                 # grabbing data position
                 if line.startswith('[DATA]'):
-                    data_offset = csv_handle.tell()
+                    self.offset_pos['data_offset'] = csv_handle.tell()
 
                 line = csv_handle.readline()
 
-            # hacked way of parsing this csv, need to handle better
-            # create header byte load
-            byte_load = (settings_offset - header_offset) - 28
 
-            # change position to header offset
-            csv_handle.seek(header_offset)
+    def parse_sample_sheet_header(self):
+        """ parsing the header section of the sample sheet """
 
-            for line in csv_handle.readlines(byte_load):
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            header_byte_load = (\
+            self.offset_pos['zumi_offset'] - self.offset_pos['header_offset']\
+            ) - 28
+
+            csv_handle.seek(self.offset_pos['header_offset'])
+
+            for line in csv_handle.readlines(header_byte_load):
                 line_lst = line.split(',')
 
-                # make all strings lower for slight error handling
+                # parsing overall project information to be used for logging, &
+                # filenaming
+                if line_lst[0].lower() == 'date':
+                    self.header_info['date'] = line_lst[1]
+
+                if line_lst[0].lower() == 'run_name':
+                    self.header_info['run_name'] = line_lst[1]
+
+                if line_lst[0].lower() == 'library_prep':
+                    self.header_info['library_prep'] = line_lst[1]
+
+                if line_lst[0].lower() == 'basename':
+                    self.header_info['basename'] = line_lst[1]
+
+                # parsing path information from header
+                # grouping relevant information together
                 if line_lst[0].lower() == 'fastq_read1':
                     self.path_info['fastq_read1'] = line_lst[1]
 
@@ -92,31 +146,102 @@ class SampleSheetParser:
                 if line_lst[0].lower() == 'annotation':
                     self.path_info['annotation'] = line_lst[1]
 
-                if line_lst[0].lower() == 'basename':
-                    self.path_info['basename'] = line_lst[1]
 
             # setting trimmed fastq file paths
             # may need to fix paths
             # trimmed fastq goes to current directory, will need to find it
             # may not be able to use relative paths in docker
             self.path_info['trimmed_r1'] = './{}.trimmed.R1.fastq.gz'.format(\
-                                                    self.path_info['basename'])
+                                                    self.header_info['basename'])
 
             self.path_info['trimmed_r2'] = './{}.trimmed.R2.fastq.gz'.format(\
-                                                    self.path_info['basename'])
+                                                    self.header_info['basename'])
 
-            # changing file position to settings/adapter offset
-            csv_handle.seek(settings_offset)
+
+    def parse_sample_sheet_zumi(self):
+        """ parsing the zumi section of the sample sheet """
+
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            zumi_byte_load = (\
+            self.offset_pos['diff_offset'] - self.offset_pos['zumi_offset']\
+            ) - 28
+
+            # changing file position to zumi offset
+            csv_handle.seek(self.offset_pos['zumi_offset'])
+
+            # setting up zumi dict for yaml config file generation
+            for line in csv_handle.readlines(zumi_byte_load):
+                line_lst = line.split(',')
+
+                if line_lst[0].lower() == 'bc_filter_num_bases':
+                    self.zumi_input['bc_filter_num_bases'] = line_lst[1]
+
+                if line_lst[0].lower() == 'bc_filter_phred':
+                    self.zumi_input['bc_filter_phred'] = line_lst[1]
+
+                if line_lst[0].lower() == 'bc_ham_dist':
+                    self.zumi_input['bc_ham_dist'] = line_lst[1]
+
+                if line_lst[0].lower() == 'umi_filter_num_bases':
+                    self.zumi_input['umi_filter_num_bases'] = line_lst[1]
+
+                if line_lst[0].lower() == 'umi_filter_phred':
+                    self.zumi_input['umi_filter_phred'] = line_lst[1]
+
+                if line_lst[0].lower() == 'umi_ham_dist':
+                    self.zumi_input['umi_ham_dist'] = line_lst[1]
+
+                if line_lst[0].lower() == 'zum_start_stage':
+                    self.zumi_input['zum_start_stage'] = line_lst[1]
+
+
+    def parse_sample_sheet_diffexp(self):
+        """ parsing the diff_expression section of the sample sheet """
+
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            diffexp_byte_load = (\
+            self.offset_pos['adapters_offset'] - self.offset_pos['diff_offset']\
+            ) - 28
+
+            csv_handle.seek(self.offset_pos['diff_offset'])
+
+            for line in csv_handle.readlines(diffexp_byte_load):
+                line_lst = line.split(',')
+                if line_lst[0].lower() == 'test_group':
+                    # need to fix this
+                    self.diff_input['test_group'] = list(line_lst[1])
+
+                if line_lst[0].lower() == 'control_group':
+                    self.diff_input['control_group'] = list(line_lst[1])
+
+
+    def parse_sample_sheet_adapters(self):
+        """ parsing the adapter section of sample sheet """
+
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            # changing to adapter offset position
+            csv_handle.seek(self.offset_pos['adapters_offset'])
 
             # setting adapter attributes
             adapter_list = csv_handle.readline().split(',')
+
+            # adapter sequences to trim
             self.adapter['adapter_3'] = adapter_list[1]
             self.adapter['adapter_5'] = adapter_list[2]
 
-            # changing file position to data offset to load into dataframe
-            csv_handle.seek(data_offset)
 
-            # pandas dataframe for easy
+    def parse_sample_sheet_data(self):
+        """ parsing cell data section from sample sheet """
+
+        with open(self.sample_sheet, 'r') as csv_handle:
+
+            # changing to data offset position
+            csv_handle.seek(self.offset_pos['data_offset'])
+
+            # pandas dataframe for easy storage, and retrieval
             self.cell_data = pd.read_csv(csv_handle)
 
 
@@ -131,6 +256,23 @@ class SampleSheetParser:
                                 header=False, \
                                 index=False)
 
+
+    def return_offsets(self):
+        """ returns offset position info """
+        return self.offset_pos
+
+    def return_header_info(self):
+        """ returns header info """
+        return self.header_info
+
+    def return_zumi_input(self):
+        """ returns zumi input info """
+        return self.zumi_input
+
+    def return_diff_input(self):
+        """ returns diff exp info """
+        return self.diff_input
+
     def return_path_info(self):
         """ return path_info dict """
         return self.path_info
@@ -139,7 +281,7 @@ class SampleSheetParser:
         """ return adapter dict sequences """
         return self.adapter
 
-    def return_barcode_seq(self):
+    def return_cell_data(self):
         """ return cell barcode list """
         return self.cell_data
 
@@ -148,6 +290,8 @@ class SampleSheetParser:
 def main():
     """ run main for testing """
     pass
+
+
 
 if __name__ == '__main__':
     main()
