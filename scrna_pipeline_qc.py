@@ -211,7 +211,7 @@ def main():
     LOGGER.info("Created SampleSheetParser Object")
     sample_obj = SampleSheetParser(sample_sheet)
 
-    sample_obj.parse_sample_sheet()
+    sample_obj.run_parsing_methods()
     LOGGER.info("Parsed sample sheet.")
 
     # creating barcode white list text file for zUMI
