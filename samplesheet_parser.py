@@ -51,6 +51,7 @@ class SampleSheetParser:
         parse_sample_sheet_diffexp() : stores info for diff expression
         parse_sample_sheet_adapters() : stores adapter info for trimming
         parse_sample_sheet_data() : stores cell data
+        run_parsing_methods() : runs all instance methods
         create_adapter_whitelist() : creates the barcode white list for zUMI from barcode_seq dict
         return_offsets() : returns offset position dict
         return_header_info() : returns header info
@@ -245,6 +246,28 @@ class SampleSheetParser:
             self.cell_data = pd.read_csv(csv_handle)
 
 
+    def run_parsing_methods(self):
+        """ runs all parsing methods to instantiate all attributes """
+
+        # grabbing offset
+        self.locate_offsets()
+
+        # parsing header
+        self.parse_sample_sheet_header()
+
+        # parsing zumi
+        self.parse_sample_sheet_zumi()
+
+        # parsing diff exp
+        self.parse_sample_sheet_diffexp()
+
+        # parsing adapters
+        self.parse_sample_sheet_adapters()
+
+        # parsing cell data
+        self.parse_sample_sheet_data()
+
+
     def create_adapter_whitelist(self):
         """ create barcode_whitelist text file """
 
@@ -290,8 +313,6 @@ class SampleSheetParser:
 def main():
     """ run main for testing """
     pass
-
-
 
 if __name__ == '__main__':
     main()
