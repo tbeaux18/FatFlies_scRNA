@@ -5,6 +5,10 @@
 
 scrna_configure_pipeline.py
 
+This is the main script that will take in the sample sheet and set the paths for other
+various scripts and software to run throughout the pipeline. The script will
+instantiate both the SampleSheetParser and ZumiConfigBuilder. The script will also
+detect the amount of cores of the host server and designate cores as calculated.
 """
 
 
@@ -84,6 +88,7 @@ def main():
     adapter_info = sample_obj.return_adapters()
 
 
+    # need to add kwarg dict to initiate run
     run_qc_cmd = """python3 scrna_qc_pipeline.py
                     -t {threads}
                     -f {fastq_r1}
