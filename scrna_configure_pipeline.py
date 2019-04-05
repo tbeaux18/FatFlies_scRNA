@@ -31,7 +31,7 @@ if not os.path.exists(LOG_DIR):
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 FORMATTER = logging.Formatter('%(levelname)s:%(name)s:%(asctime)s:%(message)s')
-FILE_HANDLER = logging.FileHandler("logs/qc_log.log")
+FILE_HANDLER = logging.FileHandler("logs/main_config.log")
 FILE_HANDLER.setFormatter(FORMATTER)
 LOGGER.addHandler(FILE_HANDLER)
 
@@ -57,7 +57,26 @@ def setup_yaml():
     yaml.add_representer(OrderedDict, represent_dictionary_order)
 
 
+def build_qc_args(*args):
+    """ builds arg dict for running qc wrapper; nonexhaustive list of args
+        passable. will need to change this to include more if desired.
 
+        args must be in in order of the keywords
+    """
+
+    # these args are not inclusive of all passable args
+    # would need to fix this if other args are wanted
+    qc_keywords = (
+        'threads',
+        'fastq_read1'
+        'fastq_read2'
+        'trimmed_r1'
+        'trimmed_r2'
+        'adapter_3'
+        'adapter_5'
+    )
+
+    return dict(zip(qc_keywords, args))
 
 
 def main():
@@ -72,21 +91,33 @@ def main():
     sample_sheet = args.sample_sheet
 
     LOGGER.info("Created SampleSheetParser Object")
-    sample_obj = SampleSheetParser(sample_sheet)
+    sample_sheet_obj = SampleSheetParser(sample_sheet)
 
-    sample_obj.run_parsing_methods()
+    sample_sheet_obj.run_parsing_methods()
     LOGGER.info("Parsed sample sheet.")
 
     # creating barcode white list text file for zUMI
-    sample_obj.create_adapter_whitelist()
+    sample_sheet_obj.create_adapter_whitelist()
     LOGGER.info("Created Barcode whitelist for zUMI.")
 
+    LOGGER.info("Created ZumiConfigBuilder Object")
+    zumi_config_obj = ZumiConfigBuilder()
+
     # dict contains all relevant file paths
-    file_path_info = sample_obj.return_path_info()
+    file_path_info = sample_sheet_obj.return_path_info()
 
     # dict contains adapter trimming sequences
-    adapter_info = sample_obj.return_adapters()
+    adapter_info = sample_sheet_obj.return_adapters()
 
+    qc_kwarg = build_qc_args(
+        16,
+        file_path_info['fastq_read1'],
+        file_path_info['fastq_read2'],
+        file_path_info['trimmed_r1'],
+        file_path_info['trimmed_r2'],
+        adapter_info['adapter_3'],
+        adapter_info['adapter_5']
+    )
 
     # need to add kwarg dict to initiate run
     run_qc_cmd = """python3 scrna_qc_pipeline.py
@@ -98,7 +129,7 @@ def main():
                     -a {adapter_3}
                     -A {adapter_5}
                     -m 12
-                    -M 20""".format(**kwargs)
+                    -M 20""".format(**qc_kwarg)
 
     run_qc_formatted_args = shlex.split(run_qc_cmd)
 
