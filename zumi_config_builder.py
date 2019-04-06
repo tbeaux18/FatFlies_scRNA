@@ -6,6 +6,8 @@
 zumi_config_builder.py
 
 Must include yaml representer to preserve order
+zUMI requires all paths to be absolute; will need to take this into account
+for creating the barcode text file and trimmed fastq samples
 """
 
 
@@ -61,7 +63,7 @@ class ZumiConfigBuilder:
             ('filter_cutoffs', None),
             ('barcodes', None),
             ('counting_opts', None),
-            ('make_stats', True,),
+            ('make_stats', 'yes',),
             ('which_Stage', None),
             ('samtools_exec', 'samtools'),
             ('Rscript_exec', 'Rscript'),
@@ -71,33 +73,33 @@ class ZumiConfigBuilder:
 
         self.sequence_file_dict = OrderedDict([
             ('file1', OrderedDict([
-                ('name', None),
+                ('name', None), # update from SampleSheetParser
                 ('base_definition', ['BC(7-12)', 'UMI(1-6)'])
             ])
             ),
             ('file2', OrderedDict([
-                ('name', None),
+                ('name', None), # update from SampleSheetParser
                 ('base_definition', ['cDNA(1-50)'])
             ])
             )
         ])
 
         self.reference_dict = OrderedDict([
-            ('STAR_index', None),
-            ('GTF_file', None),
+            ('STAR_index', None), # update from SampleSheetParser
+            ('GTF_file', None), # update from SampleSheetParser
             ('additional_files', None),
             ('additional_STAR_params', None)
         ])
 
         self.filter_cutoff_dict = OrderedDict([
             ('BC_filter', OrderedDict([
-                ('num_bases', 1),
-                ('phred', 20)
+                ('num_bases', 1), # update from SampleSheetParser
+                ('phred', 20) # update from SampleSheetParser
             ])
             ),
             ('UMI_filter', OrderedDict([
-                ('num_bases', 1),
-                ('phred', 20)
+                ('num_bases', 1), # update from SampleSheetParser
+                ('phred', 20) # update from SampleSheetParser
             ])
             )
         ])
@@ -111,17 +113,19 @@ class ZumiConfigBuilder:
         ])
 
         self.counting_opts_dict = OrderedDict([
-            ('introns', True),
+            ('introns', 'yes'),
             ('downsampling', 0),
             ('strand', 0),
             ('Ham_Dist', 1), # need to include this as an option on sample_sheet
-            ('velocyto', False),
-            ('primaryHit', True),
-            ('twoPass', True)
+            ('velocyto', 'no'),
+            ('primaryHit', 'yes'),
+            ('twoPass', 'yes')
         ])
 
     def set_nested_dict(self):
         """ setting nested keys with their respective values """
+
+        # these set the nested dicts needed for proper yaml structure
         self.top_yaml_dict['sequence_files'] = self.sequence_file_dict
         self.top_yaml_dict['reference'] = self.reference_dict
         self.top_yaml_dict['filter_cutoffs'] = self.filter_cutoff_dict
@@ -155,7 +159,7 @@ class ZumiConfigBuilder:
     def write_2_yaml(self):
         """ writes the top level yaml dict to yaml file """
         with open('test-zumi.yaml', 'w') as outfile:
-            yaml.dump(self.top_yaml_dict, outfile, default_flow_style=False)
+            yaml.dump(self.top_yaml_dict, outfile, default_flow_style=False, default_style=None)
 
 
 
