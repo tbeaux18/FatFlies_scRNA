@@ -132,10 +132,43 @@ class ZumiConfigBuilder:
             ('twoPass', "yes")
         ])
 
+    def update_top_level(self, run_name, out_path, threads, stage):
+        """ updates top level values """
+        self.top_yaml_dict['project'] = run_name
+        self.top_yaml_dict['out_dir'] = out_path
+        self.top_yaml_dict['num_threads'] = threads
+        self.top_yaml_dict['which_Stage'] = stage
+
+    def update_file_names(self, fastq_read1, fastq_read2):
+        """ updates fastq file name values """
+        self.sequence_file_dict['file1']['name'] = fastq_read1
+        self.sequence_file_dict['file2']['name'] = fastq_read2
+
+    def update_reference_files(self, star_index, gtf_file):
+        """ updates reference dict values """
+        self.reference_dict['STAR_index'] = star_index
+        self.reference_dict['GTF_file'] = gtf_file
+        # need to add section to add STAR params
+
+    def update_filter_cutoffs(self, bc_num, bc_phred, umi_num, umi_phred):
+        """ updates filter cutoffs values """
+        self.filter_cutoff_dict['BC_filter']['num_bases'] = bc_num
+        self.filter_cutoff_dict['BC_filter']['phred'] = bc_phred
+        self.filter_cutoff_dict['UMI_filter']['num_bases'] = umi_num
+        self.filter_cutoff_dict['UMI_filter']['phred'] = umi_phred
+
+    def update_barcodes(self, barcode_path, barcode_ham):
+        """ updates barcode options """
+        self.barcode_dict['barcode_file'] = barcode_path
+        self.barcode_dict['BarcodeBinning'] = barcode_ham
+
+    def update_count_opts(self, umi_ham):
+        """ updates umi counting opts """
+        self.counting_opts_dict['Ham_Dist'] = umi_ham
+
     def set_nested_dict(self):
         """ setting nested keys with their respective values """
-
-        # these set the nested dicts needed for proper yaml structure
+        # update methods should be ran before this method
         self.top_yaml_dict['sequence_files'] = self.sequence_file_dict
         self.top_yaml_dict['reference'] = self.reference_dict
         self.top_yaml_dict['filter_cutoffs'] = self.filter_cutoff_dict
@@ -166,10 +199,15 @@ class ZumiConfigBuilder:
         """ returns counting opts dict """
         return self.counting_opts_dict
 
-    def write_2_yaml(self):
+    def write_yaml(self):
         """ writes the top level yaml dict to yaml file """
         with open('test-zumi.yaml', 'w') as outfile:
-            yaml.dump(self.top_yaml_dict, outfile, default_flow_style=False, default_style=None)
+            yaml.dump(
+                self.top_yaml_dict,
+                outfile,
+                default_flow_style=False,
+                default_style=None
+            )
 
 
 def main():
@@ -181,7 +219,7 @@ def main():
 
     z.set_nested_dict()
 
-    z.write_2_yaml()
+    z.write_yaml()
 
 if __name__ == '__main__':
     main()
