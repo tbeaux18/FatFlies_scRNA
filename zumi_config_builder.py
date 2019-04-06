@@ -13,6 +13,7 @@ for creating the barcode text file and trimmed fastq samples
 
 from collections import OrderedDict
 import yaml
+from yaml.resolver import Resolver
 
 def represent_dictionary_order(self, dict_data):
     """ instantiates yaml dict mapping """
@@ -21,6 +22,15 @@ def represent_dictionary_order(self, dict_data):
 def setup_yaml():
     """ adds the representer to the yaml instance """
     yaml.add_representer(OrderedDict, represent_dictionary_order)
+
+    # remove resolver entries for On/Off/Yes/No
+    for char_bool in "OoYyNn":
+        if len(Resolver.yaml_implicit_resolvers[char_bool]) == 1:
+            del Resolver.yaml_implicit_resolvers[char_bool]
+        else:
+            Resolver.yaml_implicit_resolvers[char_bool] = [
+                x for x in Resolver.yaml_implicit_resolvers[char_bool]
+                if x[0] != 'tag:yaml.org,2002:bool']
 
 
 class ZumiConfigBuilder:
@@ -63,7 +73,7 @@ class ZumiConfigBuilder:
             ('filter_cutoffs', None),
             ('barcodes', None),
             ('counting_opts', None),
-            ('make_stats', 'yes',),
+            ('make_stats', "yes"),
             ('which_Stage', None),
             ('samtools_exec', 'samtools'),
             ('Rscript_exec', 'Rscript'),
@@ -107,19 +117,19 @@ class ZumiConfigBuilder:
         self.barcode_dict = OrderedDict([
             ('barcode_num', None),
             ('barcode_file', None), # file path from SampleSheetParser
-            ('automatic', 'yes'),
+            ('automatic', "yes"),
             ('BarcodeBinning', None), # int from SampleSheetParser
             ('nReadsperCell', 100)
         ])
 
         self.counting_opts_dict = OrderedDict([
-            ('introns', 'yes'),
+            ('introns', "yes"),
             ('downsampling', 0),
             ('strand', 0),
             ('Ham_Dist', 1), # need to include this as an option on sample_sheet
-            ('velocyto', 'no'),
-            ('primaryHit', 'yes'),
-            ('twoPass', 'yes')
+            ('velocyto', "no"),
+            ('primaryHit', "yes"),
+            ('twoPass', "yes")
         ])
 
     def set_nested_dict(self):
@@ -160,7 +170,6 @@ class ZumiConfigBuilder:
         """ writes the top level yaml dict to yaml file """
         with open('test-zumi.yaml', 'w') as outfile:
             yaml.dump(self.top_yaml_dict, outfile, default_flow_style=False, default_style=None)
-
 
 
 def main():

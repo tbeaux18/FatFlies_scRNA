@@ -19,6 +19,7 @@ import subprocess
 import logging
 from collections import OrderedDict
 import yaml
+from yaml.resolver import Resolver
 from samplesheet_parser import SampleSheetParser
 from zumi_config_builder import ZumiConfigBuilder
 
@@ -51,10 +52,18 @@ def represent_dictionary_order(self, dict_data):
     """ instantiates yaml dict mapping """
     return self.represent_mapping('tag:yaml.org,2002:map', dict_data.items())
 
-
 def setup_yaml():
     """ adds the representer to the yaml instance """
     yaml.add_representer(OrderedDict, represent_dictionary_order)
+
+    # remove resolver entries for On/Off/Yes/No
+    for char_bool in "OoYyNn":
+        if len(Resolver.yaml_implicit_resolvers[char_bool]) == 1:
+            del Resolver.yaml_implicit_resolvers[char_bool]
+        else:
+            Resolver.yaml_implicit_resolvers[char_bool] = [
+                x for x in Resolver.yaml_implicit_resolvers[char_bool]
+                if x[0] != 'tag:yaml.org,2002:bool']
 
 
 def build_qc_args(*args):
