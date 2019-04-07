@@ -126,7 +126,7 @@ class ZumiConfigBuilder:
             ('introns', "yes"),
             ('downsampling', 0),
             ('strand', 0),
-            ('Ham_Dist', 1), # need to include this as an option on sample_sheet
+            ('Ham_Dist', 0), # must stay at 0 for now until zUMI fixes multi-thread issue
             ('velocyto', "no"),
             ('primaryHit', "yes"),
             ('twoPass', "yes")
