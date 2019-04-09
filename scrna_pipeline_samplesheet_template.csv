@@ -24,7 +24,7 @@ control_group,24,,,
 [ADAPTERS],,,,
 Adapter,TGGAATTCTCGG,GATCGTCGGACT,,
 ,,,,
-[DATA],,,,
+[DATA],,,,,
 cell_id,full_sample_name,sample_name,barcode_index,barcode_sequence,experiment_group
 1,fed-gfp-1R,f1.1,cel-4,AGCTTC,1
 2,fed-gfp-1L,f1.2,cel-5,CATGAG,1
