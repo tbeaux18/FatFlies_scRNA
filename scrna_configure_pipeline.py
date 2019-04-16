@@ -278,8 +278,8 @@ def main():
     print("Running quality control on FASTQ files.")
     run_quality_control(
         threads=16,
-        fastq_read1=file_path_info['fastq_read1'],
-        fastq_read2=file_path_info['fastq_read2'],
+        fastq_r1=file_path_info['fastq_read1'],
+        fastq_r2=file_path_info['fastq_read2'],
         trimmed_r1=CURRENT_DIR + file_path_info['trimmed_r1'],
         trimmed_r2=CURRENT_DIR + file_path_info['trimmed_r2'],
         adapter_3=adapter_info['adapter_3'],
