@@ -116,7 +116,7 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
     # need to make zumi output directory
     # ./basename_zumi_output
     zumi_config_obj.update_top_level(
-        sam_header_info['run_name'] + '_' + sam_header_info['date'],
+        sam_header_info['run_name'],
         CURRENT_DIR + '/' + sam_header_info['basename'] + '_zumi_output',
         16, # threads need to control for
         sam_zumi_info['zum_start_stage']
