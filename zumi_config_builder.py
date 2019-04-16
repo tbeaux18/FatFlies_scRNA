@@ -210,7 +210,7 @@ class ZumiConfigBuilder:
                 default_flow_style=False,
                 default_style=None
             )
-
+        return zumi_yaml_full_path
 
 def main():
     """ run main for testing """

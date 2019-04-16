@@ -268,12 +268,14 @@ def main():
     zumi_config_obj = ZumiConfigBuilder()
 
     # parsing SampleSheetParser and exchanging information with ZumiConfigBuilder
+    print("Parsing the sample sheet and building the zUMI config file.")
     file_path_info, adapter_info, zumi_yaml = samplesheet_zumi_build(
         sample_sheet_obj,
         zumi_config_obj
     )
 
     # calls subprocess to run the scrna_qc_pipeline.py script
+    print("Running quality control on FASTQ files.")
     run_quality_control(
         threads=16,
         fastq_read1=file_path_info['fastq_read1'],
@@ -285,6 +287,7 @@ def main():
     )
 
     # calls STAR by subprocess to build reference genome index
+    print("Building the STAR index.")
     build_star_index(
         threads=16,
         dmel_index_dir=CURRENT_DIR + '/' + DMEL_INDEX_DIR,
@@ -292,6 +295,7 @@ def main():
     )
 
     # zumi yaml path is returned from samplesheet_zumi_build after writing the file
+    print("Running the zUMIs pipeline.")
     run_zumi_pipeline(zumi_yaml)
 
 if __name__ == '__main__':
