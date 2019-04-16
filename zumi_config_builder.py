@@ -103,13 +103,13 @@ class ZumiConfigBuilder:
 
         self.filter_cutoff_dict = OrderedDict([
             ('BC_filter', OrderedDict([
-                ('num_bases', 1), # update from SampleSheetParser
-                ('phred', 20) # update from SampleSheetParser
+                ('num_bases', None), # update from SampleSheetParser
+                ('phred', None) # update from SampleSheetParser
             ])
             ),
             ('UMI_filter', OrderedDict([
-                ('num_bases', 1), # update from SampleSheetParser
-                ('phred', 20) # update from SampleSheetParser
+                ('num_bases', None), # update from SampleSheetParser
+                ('phred', None) # update from SampleSheetParser
             ])
             )
         ])
@@ -126,7 +126,7 @@ class ZumiConfigBuilder:
             ('introns', "yes"),
             ('downsampling', 0),
             ('strand', 0),
-            ('Ham_Dist', 0), # must stay at 0 for now until zUMI fixes multi-thread issue
+            ('Ham_Dist', None), # must stay at 0 for now until zUMI fixes multi-thread issue
             ('velocyto', "no"),
             ('primaryHit', "yes"),
             ('twoPass', "yes")
@@ -144,11 +144,11 @@ class ZumiConfigBuilder:
         self.sequence_file_dict['file1']['name'] = fastq_read1
         self.sequence_file_dict['file2']['name'] = fastq_read2
 
-    def update_reference_files(self, star_index, gtf_file):
+    def update_reference_files(self, star_index, gtf_file, add_params):
         """ updates reference dict values """
         self.reference_dict['STAR_index'] = star_index
         self.reference_dict['GTF_file'] = gtf_file
-        # need to add section to add STAR params
+        self.reference_dict['additional_STAR_params'] = add_params
 
     def update_filter_cutoffs(self, bc_num, bc_phred, umi_num, umi_phred):
         """ updates filter cutoffs values """

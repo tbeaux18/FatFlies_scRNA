@@ -26,13 +26,12 @@ STAR
     --twopassMode Basic
     --readFilesIn "cdnaread.filtered.fastq.gz"
 additional_STAR_params: consider setting this as a default to handle many junctions
-    --limitOutSJcollapsed 2000000
-    --limitSjdbInsertNsj 2000000
+    --limitOutSJcollapsed 2000000 --limitSjdbInsertNsj 2000000
 
 
 """
 
-
+import sys
 import os
 import shlex
 import argparse
@@ -101,6 +100,8 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
         object to the ZumiConfigBuilder object
     """
 
+    additional_star_params = "--limitOutSJcollapsed 2000000 --limitSjdbInsertNsj 2000000"
+
     # must run initially to set SampleSheetParser attributes
     sample_sheet_obj.run_parsing_methods()
 
@@ -124,15 +125,16 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
 
     # passing trimmed fastqs paths to zumi config file
     zumi_config_obj.update_file_names(
-        CURRENT_DIR + '/' + sam_path_info['trimmed_r1'],
-        CURRENT_DIR + '/' + sam_path_info['trimmed_r2']
+        CURRENT_DIR + sam_path_info['trimmed_r1'],
+        CURRENT_DIR + sam_path_info['trimmed_r2']
     )
 
     # need to better handle star index build path
     # setting reference paths for zumi output
     zumi_config_obj.update_reference_files(
         CURRENT_DIR + '/' + DMEL_INDEX_DIR,
-        sam_path_info['annotation'] # gtf path
+        sam_path_info['annotation'], # gtf path
+        additional_star_params
     )
 
     # passing filter cutoffs
@@ -147,6 +149,11 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
     zumi_config_obj.update_barcodes(
         CURRENT_DIR + '/barcode_whitelist.txt',
         int(sam_zumi_info['bc_ham_dist']),
+    )
+
+    # updating collapsing ham distance
+    zumi_config_obj.update_count_opts(
+        int(sam_zumi_info['umi_ham_dist'])
     )
 
     # creates the nested dicts in the proper order to be dumped to YAML file
@@ -274,6 +281,7 @@ def main():
         zumi_config_obj
     )
 
+    sys.exit()
     # calls subprocess to run the scrna_qc_pipeline.py script
     print("Running quality control on FASTQ files.")
     run_quality_control(
