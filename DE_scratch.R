@@ -1,6 +1,6 @@
 #' Differential Expression from scratch with Single Cell RNA Sequencing data
 #' Notes from Kamil (4/12/19)
-library(ggplot)
+library(ggplot2)
 library(ggrepel)
 
 # Load UMI count data into dataframe (samples, groups, counts)
@@ -11,14 +11,15 @@ samples <- c("sta-gfp-2R", "fed-neg-2L", "sta-neg-2L", "fed-gfp-1R",
              "sta-neg-1L", "fed-gfp-2R", "fed-neg-2R", "fed-gfp-2L", 
              "fed-neg-1L", "sta-neg-1R", "sta-neg-2R", "sta-gfp-1R")
 colnames(umi) <- samples
-groups <- stringr::str_split_fixed(colnames(log2cpm), '-', 3)[,1:2]
+groups <- stringr::str_split_fixed(colnames(umi), '-', 3)[,1:2]
 counts <- colSums(umi)
 annot <- data.frame(samples, groups, counts)
 
 # log transform cpm for every gene (log base 2) ~ tends to fit values toward a normal distribution
 hist(umi, main="Raw UMI counts by gene", xlab="counts") # raw
 hist((umi+1)/1e6, main="CPM by gene") # cpm 
-log2cpm <- t(apply(umi, 1, function(x) log2(((x+1)/sum(x)) * 1e6))) #log2(cpm)
+log2cpm <- t(apply(umi, 1, function(x) log2( ((x+1*1e6)/sum(x)) ))) #log2(cpm)
+log2cpm <- t(apply(umi, 1, function(x) log2(((x+1)/sum(x))*1e6)))
 hist(log2cpm, main = "Log2(CPM) by gene") 
 
 # principal components analysis of ALL samples
@@ -50,7 +51,7 @@ ggplot(data=pca_df, aes(x=PC1, y=PC2, label=samples, color=X2)) +
   ggtitle("PC1 vs. PC2 (gfp+ vs. gfp-)")
 
 # model correlation of each meta variable with PC1/PC2
-lmPC1 <- lm(PC1 ~ X2, pca_df)
+lmPC1 <- lm(PC2 ~counts, pca_df)
 lmPC2 <- lm(PC2 ~ X1+X2+counts, pca_df)
 summary(lmPC1)
 summary(lmPC2)
@@ -113,7 +114,7 @@ diffExp[1:40] # up-regulated in starved
 grouped.log2cpm.gfp <- log2cpm.gfp[,c("fed-gfp-1R", "fed-gfp-1L", "fed-gfp-2R", "fed-gfp-2L",
                                       "sta-gfp-1R","sta-gfp-1L", "sta-gfp-2R", "sta-gfp-2L")]
 gene.gpf.df <- data.frame(samples=colnames(grouped.log2cpm.gfp),
-                          cpm=grouped.log2cpm.gfp["euc",]) #Obp44a
+                          cpm=grouped.log2cpm.gfp["euc",]) #lib
 ggplot(data=gene.gpf.df, aes(x=samples, y=cpm)) + geom_bar(stat="identity")
 
 ## plot cpm gene expression across samples
