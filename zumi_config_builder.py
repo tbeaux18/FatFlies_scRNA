@@ -199,9 +199,11 @@ class ZumiConfigBuilder:
         """ returns counting opts dict """
         return self.counting_opts_dict
 
-    def write_yaml(self):
+    def write_yaml(self, basename, current_dir):
         """ writes the top level yaml dict to yaml file """
-        with open('test-zumi.yaml', 'w') as outfile:
+
+        zumi_yaml_full_path = current_dir + '/' + basename + '_zumi_config.yaml'
+        with open(zumi_yaml_full_path, 'w') as outfile:
             yaml.dump(
                 self.top_yaml_dict,
                 outfile,
@@ -212,14 +214,7 @@ class ZumiConfigBuilder:
 
 def main():
     """ run main for testing """
-
-    setup_yaml()
-
-    z = ZumiConfigBuilder()
-
-    z.set_nested_dict()
-
-    z.write_yaml()
+    pass
 
 if __name__ == '__main__':
     main()

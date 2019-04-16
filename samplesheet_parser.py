@@ -152,10 +152,10 @@ class SampleSheetParser:
             # may need to fix paths
             # trimmed fastq goes to current directory, will need to find it
             # may not be able to use relative paths in docker
-            self.path_info['trimmed_r1'] = './{}.trimmed.R1.fastq.gz'.format(\
+            self.path_info['trimmed_r1'] = '/{}.trimmed.R1.fastq.gz'.format(\
                                                     self.header_info['basename'])
 
-            self.path_info['trimmed_r2'] = './{}.trimmed.R2.fastq.gz'.format(\
+            self.path_info['trimmed_r2'] = '/{}.trimmed.R2.fastq.gz'.format(\
                                                     self.header_info['basename'])
 
 
@@ -268,16 +268,19 @@ class SampleSheetParser:
         self.parse_sample_sheet_data()
 
 
-    def create_adapter_whitelist(self):
+    def create_adapter_whitelist(self, barcode_path):
         """ create barcode_whitelist text file """
 
         # need to direct toward specific path
         # will only exist in Docker
-        self.cell_data.to_csv('barcode_white.txt', \
-                                sep='\n', \
-                                columns=['barcode_sequence'], \
-                                header=False, \
-                                index=False)
+        full_bar_path = barcode_path + '/barcode_whitelist.txt'
+        self.cell_data.to_csv(
+            full_bar_path,
+            sep='\n',
+            columns=['barcode_sequence'],
+            header=False,
+            index=False
+    )
 
 
     def return_offsets(self):
