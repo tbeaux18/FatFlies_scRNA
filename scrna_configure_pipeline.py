@@ -203,11 +203,17 @@ def run_quality_control(**kwargs):
 
     run_qc_formatted_args = shlex.split(run_qc_cmd)
 
-    subprocess.run(
-        run_qc_formatted_args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
+    trim_r1_path = Path(kwargs['trimmed_r1'])
+    trim_r2_path = Path(kwargs['trimmed_r2'])
+
+    if not trim_r1_path.is_file() and not trim_r2_path.is_file():
+        subprocess.run(
+            run_qc_formatted_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    else:
+        print("Process fastq files detected.")
 
 
 def build_star_index(**kwargs):
@@ -278,11 +284,15 @@ def run_zumi_pipeline(zumi_yaml):
 
     zumi_formatted_args = shlex.split(zumi_cmd)
 
-    subprocess.run(
-        zumi_formatted_args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
+
+    if Path(zumi_yaml).is_file():
+        subprocess.run(
+            zumi_formatted_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    else:
+        print("Zumi Yaml file has not been built. Aborting.")
 
 
 def main():
