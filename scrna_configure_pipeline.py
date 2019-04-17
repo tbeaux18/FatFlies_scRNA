@@ -249,8 +249,8 @@ def build_star_index(**kwargs):
         print("Genome index detected.")
         print("Checking if index is built with same fasta file.")
 
-        # grabbing the genomeparam file and checking if fasta file was used to build
         with open(genparam_path, 'r') as infile:
+            # grabs fasta path from genomeparam file
             built_idx_fasta = ''.join(
                 [filepath[1] for filepath in
                  [line.split() for line in infile]
@@ -307,6 +307,7 @@ def main():
         zumi_config_obj
     )
 
+
     # calls subprocess to run the scrna_qc_pipeline.py script
     print("Running quality control on FASTQ files.")
     run_quality_control(
@@ -319,6 +320,7 @@ def main():
         adapter_5=adapter_info['adapter_5']
     )
 
+
     # calls STAR by subprocess to build reference genome index
     print("Building the STAR index.")
     build_star_index(
@@ -326,6 +328,7 @@ def main():
         dmel_index_dir=CURRENT_DIR + '/' + DMEL_INDEX_DIR,
         ref_fasta_file=file_path_info['ref_genome']
     )
+
 
     # zumi yaml path is returned from samplesheet_zumi_build after writing the file
     print("Running the zUMIs pipeline.")

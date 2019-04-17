@@ -74,29 +74,6 @@ def arg_parser():
     return parser.parse_args()
 
 
-def build_fastqc_args(*args):
-    """ takes fastqc args and creates a kwarg for fastqc command line.
-        this is a nonexhaustive list of args. Would need to change to include
-        new args.
-
-        args must be in order of fastqc_keyword
-    """
-
-    # error handling
-    assert isinstance(args[0], int), "Thread argument requires an int object."
-    assert isinstance(args[1], str), "Output dir argument requires a str object."
-    assert isinstance(args[2], str), "R1 input file argument requires a str object."
-    assert isinstance(args[3], str), "R2 input file argument requires a str object."
-
-    fastqc_keywords = ('threads', \
-                        'output_dir', \
-                        'fastq_read1', \
-                        'fastq_read2'\
-    )
-
-    return dict(zip(fastqc_keywords, args))
-
-
 
 def run_fastqc(**kwargs):
     """ runs fastqc with the provided args from build_fastqc_args()
@@ -129,41 +106,6 @@ def run_fastqc(**kwargs):
 
 
 
-def build_cutadapt_args(*args):
-    """ builds arg dict for running cutadapt; nonexhaustive list of args
-        passable. will need to change this to include more if desired.
-
-        args must be in in order of the cutadapt keywords
-    """
-
-    # error handling
-    assert isinstance(args[0], int), "Thread argument requires an int object."
-    assert isinstance(args[1], str), "3' Adapter argument requires a str object."
-    assert isinstance(args[2], str), "5' Adapter argument requires a str object."
-    assert isinstance(args[3], int), "Min length R1 argument requires an int object."
-    assert isinstance(args[4], int), "Min length R2 argument requires an int object."
-    assert isinstance(args[5], str), "R1 output file argument requires a str object."
-    assert isinstance(args[6], str), "R2 output file argument requires a str object."
-    assert isinstance(args[7], str), "R1 input file argument requires a str object."
-    assert isinstance(args[8], str), "R2 input file argument requires a str object."
-
-    # these args are not inclusive of all passable args
-    # would need to fix this if other args are wanted
-    cutadapt_keywords = ('threads', \
-                        '3p_adapter', \
-                        '5p_adapter', \
-                        'min_length_r1', \
-                        'min_length_r2', \
-                        'output_read1', \
-                        'output_read2', \
-                        'fastq_read1', \
-                        'fastq_read2' \
-    )
-
-    return dict(zip(cutadapt_keywords, args))
-
-
-
 def run_cutadapt(**kwargs):
     """ runs cutadapt with provided arguments from build_cutadapt_args()
         params:
@@ -174,8 +116,8 @@ def run_cutadapt(**kwargs):
 
     cutadapt_command = """cutadapt
                         -j {threads}
-                        -a {3p_adapter}
-                        -A {5p_adapter}
+                        -a {adapter_3}
+                        -A {adapter_5}
                         -m {min_length_r1}:{min_length_r2}
                         -o {output_read1}
                         -p {output_read2}
@@ -217,43 +159,37 @@ def main():
     read2_min = args.read2_min # 20
 
 
-    initial_fastqc_kwarg = build_fastqc_args(
-        threads,
-        INITIAL_FASTQC_OUTPUT,
-        fastq_r1,
-        fastq_r2
-    )
-
-    LOGGER.info("Building initial fastqc dictionary: %s", initial_fastqc_kwarg)
     LOGGER.info("Running FASTQC on initial raw data.")
-    run_fastqc(**initial_fastqc_kwarg)
 
-    cutadapt_kwargs = build_cutadapt_args(
-        threads,
-        adapter_3,
-        adapter_5,
-        read1_min,
-        read2_min,
-        trimmed_r1,
-        trimmed_r2,
-        fastq_r1,
-        fastq_r2
+    run_fastqc(
+        threads=threads,
+        output_dir=INITIAL_FASTQC_OUTPUT,
+        fastq_read1=fastq_r1,
+        fastq_read2=fastq_r2
     )
 
-    LOGGER.info("Building cutadapt dictionary: %s", cutadapt_kwargs)
     LOGGER.info("Running cutadapt.")
-    run_cutadapt(**cutadapt_kwargs)
 
-    trimmed_fastqc_kwarg = build_fastqc_args(
-        threads,
-        TRIMMED_FASTQC_OUTPUT,
-        trimmed_r1,
-        trimmed_r2
+    run_cutadapt(
+        threads=threads,
+        adapter_3=adapter_3,
+        adapter_5=adapter_5,
+        min_length_r1=read1_min,
+        min_length_r2=read2_min,
+        output_read1=trimmed_r1,
+        output_read2=trimmed_r2,
+        fastq_read1=fastq_r1,
+        fastq_read2=fastq_r2
     )
 
-    LOGGER.info("Building trimmed fastqc dictionary: %s", trimmed_fastqc_kwarg)
     LOGGER.info("Running FASTQC on trimmed data.")
-    run_fastqc(**trimmed_fastqc_kwarg)
+
+    run_fastqc(
+        threads=threads,
+        output_dir=TRIMMED_FASTQC_OUTPUT,
+        fastq_read1=trimmed_r1,
+        fastq_read2=trimmed_r2
+    )
 
 
 
