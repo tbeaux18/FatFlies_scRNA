@@ -217,7 +217,7 @@ def run_quality_control(**kwargs):
             stderr=subprocess.PIPE
         )
     else:
-        print("Process fastq files detected.")
+        print("Processed fastq files detected.")
 
 
 def build_star_index(**kwargs):
@@ -283,11 +283,10 @@ def run_zumi_pipeline(zumi_yaml):
             None
     """
 
-    zumi_cmd = """bash zUMIs-master.sh
+    zumi_cmd = """sh zUMIs-master.sh
                 -y {zumi_config_yaml}""".format(zumi_config_yaml=zumi_yaml)
 
     zumi_formatted_args = shlex.split(zumi_cmd)
-
 
     if Path(zumi_yaml).is_file():
         subprocess.run(
