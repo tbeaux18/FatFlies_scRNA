@@ -31,7 +31,7 @@ additional_STAR_params: consider setting this as a default to handle many juncti
 
 """
 
-import sys
+from pathlib import Path
 import os
 import shlex
 import argparse
@@ -230,11 +230,37 @@ def build_star_index(**kwargs):
 
     star_idx_formatted_args = shlex.split(star_build_index_cmd)
 
-    subprocess.run(
-        star_idx_formatted_args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
+    # checking if one of the genome index files exist
+    saidx_path = kwargs['dmel_index_dir'] + '/SAindex'
+    genparam_path = kwargs['dmel_index_dir'] + '/genomeParameters.txt'
+
+    idx_file = Path(saidx_path)
+
+    if not idx_file.is_file():
+        print("Genome index not detected.")
+        print("Building genome index.")
+        subprocess.run(
+            star_idx_formatted_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    else:
+        print("Genome index detected.")
+        print("Checking if index is built with same fasta file.")
+
+        # grabbing the genomeparam file and checking if fasta file was used to build
+        with open(genparam_path, 'r') as infile:
+            built_idx_fasta = ''.join(
+                [filepath[1] for filepath in
+                 [line.split() for line in infile]
+                 if filepath[0] == 'genomeFastaFiles']
+                )
+            if built_idx_fasta == kwargs['ref_fasta_file']:
+                print("Genome index built with same reference fasta file.")
+            else:
+                print("""Genome index not built with same
+                    reference fasta file or filename has changed.""")
 
 
 def run_zumi_pipeline(zumi_yaml):
@@ -281,7 +307,6 @@ def main():
         zumi_config_obj
     )
 
-    sys.exit()
     # calls subprocess to run the scrna_qc_pipeline.py script
     print("Running quality control on FASTQ files.")
     run_quality_control(
