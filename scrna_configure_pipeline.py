@@ -273,7 +273,7 @@ def run_zumi_pipeline(zumi_yaml):
             None
     """
 
-    zumi_cmd = """bash ./zUMIs-master.sh
+    zumi_cmd = """bash zUMIs-master.sh
                 -y {zumi_config_yaml}""".format(zumi_config_yaml=zumi_yaml)
 
     zumi_formatted_args = shlex.split(zumi_cmd)
