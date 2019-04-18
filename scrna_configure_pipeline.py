@@ -70,6 +70,7 @@ def arg_parser():
     parser = argparse.ArgumentParser(
         description='Runs the single-cell RNA-seq pipeline.'
     )
+    parser.add_argument('-z', '--zumi_path', type=str, help='Enter absolute/path/to/zumi_repo')
     parser.add_argument('sample_sheet', type=str, help='Enter absolute/path/to/sample_sheet.csv')
 
     return parser.parse_args()
@@ -273,7 +274,7 @@ def build_star_index(**kwargs):
                     reference fasta file or filename has changed.""")
 
 
-def run_zumi_pipeline(zumi_yaml):
+def run_zumi_pipeline(zumi_yaml, zumi_path):
     """ runs the zumi pipeline. Steps include filtering, alignment, and counting
 
         params:
@@ -283,8 +284,11 @@ def run_zumi_pipeline(zumi_yaml):
             None
     """
 
-    zumi_cmd = """sh zUMIs-master.sh
-                -y {zumi_config_yaml}""".format(zumi_config_yaml=zumi_yaml)
+    zumi_cmd = """bash {zumi_path}/zUMIs-master.sh
+                -y {zumi_config_yaml}""".format(
+                    zumi_path=zumi_path,
+                    zumi_config_yaml=zumi_yaml
+                )
 
     zumi_formatted_args = shlex.split(zumi_cmd)
 
@@ -307,6 +311,7 @@ def main():
     setup_yaml()
 
     sample_sheet = args.sample_sheet
+    zumi_main_path = args.zumi_path
     LOGGER.info("Input args: %s", args)
 
     # intantiating each object
@@ -345,7 +350,7 @@ def main():
 
     # zumi yaml path is returned from samplesheet_zumi_build after writing the file
     print("Running the zUMIs pipeline.")
-    run_zumi_pipeline(zumi_yaml)
+    run_zumi_pipeline(zumi_yaml, zumi_main_path)
 
 if __name__ == '__main__':
     main()
