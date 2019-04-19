@@ -3,26 +3,21 @@ FROM ubuntu:r35
 MAINTAINER Timothy Baker <tbaker8@luc.edu>
 
 
+RUN mkdir pipeline
 
-# pass the sample sheet as the argument into the docker
-# may need to mount a volume to host directory
-# need to make sure sample sheet, fastq files, ref genome, and annotation file are in same directory
+VOLUME ["/pipeline"]
 
 
 # need to track where various git clones will be located
-RUN git clone https://github.com/sdparekh/zUMIs.git
+# need to handle UMIstuffFUN.R updated file to thread at 1 core for UMI collapsing
+RUN git clone https://github.com/sdparekh/zUMIs.git /pipeline/zUMIs
 
-RUN git clone https://github.com/tbeaux18/FatFlies_scRNA.git
+RUN git clone https://github.com/tbeaux18/FatFlies_scRNA.git /pipeline/FatFlies_scRNA
 
 # runs script that takes in sample sheet and performs quality control
 # script runs out of the home directory of the FatFlies_scRNA directory from github
-RUN ./scrna_pipeline_qc.py \
-  -t threads \
-  sample_sheet.csv
+
+WORKDIR /pipeline/FatFlies_scRNA
 
 
-RUN STAR \
-  --runMode genomeGenerate \
-  --runThreadN 16 \ # need to track threading
-  --genomeDir /home1/tbaker8/drosophila_mel \ # need to track file path handling
-  --genomeFastaFiles /home1/tbaker8/drosophila_mel/dm6_ERCC_GAL4_GFP.fa # need to track file path handling
+# RUN python3 scrna_configure_pipeline.py -z /pipeline/zUMIs
