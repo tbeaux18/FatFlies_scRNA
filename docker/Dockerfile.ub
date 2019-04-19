@@ -107,7 +107,15 @@ RUN \
   cd /usr/local/bin \
   && TARBALL=2.7.0f.tar.gz \
   && NAME=STAR-2.7.0f \
-  && wget -P /usr/local/bin/star https://github.com/alexdobin/STAR/archive/${TARBALL} \
-  && tar -xzf /usr/local/bin/star/${TARBALL} -C /usr/local/bin/star \
-  && make -C /usr/local/bin/star/${NAME}/source STAR \
+  && wget https://github.com/alexdobin/STAR/archive/${TARBALL} \
+  && tar -xzf ${TARBALL} \
+  && cd ${NAME}/source \
+  && make STAR \
+  && ln -s /${NAME}/source/STAR /usr/local/bin
   && cd /
+
+
+RUN \
+  apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y git

@@ -65,6 +65,9 @@ FILE_HANDLER.setFormatter(FORMATTER)
 LOGGER.addHandler(FILE_HANDLER)
 
 
+
+
+
 def arg_parser():
     """ Argument input from command line """
 
@@ -209,6 +212,9 @@ def run_quality_control(**kwargs):
 
     run_qc_formatted_args = shlex.split(run_qc_cmd)
 
+    LOGGER.info("QC wrapper args: %s", run_qc_formatted_args)
+
+
     trim_r1_path = Path(kwargs['trimmed_r1'])
     trim_r2_path = Path(kwargs['trimmed_r2'])
 
@@ -219,7 +225,7 @@ def run_quality_control(**kwargs):
             stderr=subprocess.PIPE
         )
     else:
-        print("Processed fastq files detected.")
+        LOGGER.info("Processed fastq files detected.")
 
 
 def build_star_index(**kwargs):
@@ -242,6 +248,9 @@ def build_star_index(**kwargs):
 
     star_idx_formatted_args = shlex.split(star_build_index_cmd)
 
+    LOGGER.info("STAR Build args: %s", star_idx_formatted_args)
+
+
     # checking if one of the genome index files exist
     saidx_path = kwargs['dmel_index_dir'] + '/SAindex'
     genparam_path = kwargs['dmel_index_dir'] + '/genomeParameters.txt'
@@ -249,8 +258,8 @@ def build_star_index(**kwargs):
     idx_file = Path(saidx_path)
 
     if not idx_file.is_file():
-        print("Genome index not detected.")
-        print("Building genome index.")
+        LOGGER.info("Genome index not detected.")
+        LOGGER.info("Building genome index.")
         subprocess.run(
             star_idx_formatted_args,
             stdout=subprocess.PIPE,
@@ -258,8 +267,8 @@ def build_star_index(**kwargs):
         )
 
     else:
-        print("Genome index detected.")
-        print("Checking if index is built with same fasta file.")
+        LOGGER.info("Genome index detected.")
+        LOGGER.info("Checking if index is built with same fasta file.")
 
         with open(genparam_path, 'r') as infile:
             # grabs fasta path from genomeparam file
@@ -269,9 +278,9 @@ def build_star_index(**kwargs):
                  if filepath[0] == 'genomeFastaFiles']
                 )
             if built_idx_fasta == kwargs['ref_fasta_file']:
-                print("Genome index built with same reference fasta file.")
+                LOGGER.info("Genome index built with same reference fasta file.")
             else:
-                print("""Genome index not built with same
+                LOGGER.info("""Genome index not built with same
                     reference fasta file or filename has changed.""")
 
 
@@ -292,6 +301,8 @@ def run_zumi_pipeline(zumi_yaml, zumi_path):
                 )
 
     zumi_formatted_args = shlex.split(zumi_cmd)
+
+    LOGGER.info("zUMI args: %s", zumi_formatted_args)
 
     if Path(zumi_yaml).is_file():
         subprocess.run(
@@ -327,7 +338,7 @@ def main():
     zumi_config_obj = ZumiConfigBuilder()
 
     # parsing SampleSheetParser and exchanging information with ZumiConfigBuilder
-    print("Parsing the sample sheet and building the zUMI config file.")
+    LOGGER.info("Parsing the sample sheet and building the zUMI config file.")
     file_path_info, adapter_info, zumi_yaml = samplesheet_zumi_build(
         sample_sheet_obj,
         zumi_config_obj,
@@ -336,7 +347,7 @@ def main():
 
 
     # calls subprocess to run the scrna_qc_pipeline.py script
-    print("Running quality control on FASTQ files.")
+    LOGGER.info("Running quality control on FASTQ files.")
     run_quality_control(
         threads=threads_avail,
         fastq_r1=file_path_info['fastq_read1'],
@@ -349,7 +360,7 @@ def main():
 
 
     # calls STAR by subprocess to build reference genome index
-    print("Building the STAR index.")
+    LOGGER.info("Building the STAR index.")
     build_star_index(
         threads=threads_avail,
         dmel_index_dir=CURRENT_DIR + '/' + DMEL_INDEX_DIR,
@@ -358,7 +369,7 @@ def main():
 
 
     # zumi yaml path is returned from samplesheet_zumi_build after writing the file
-    print("Running the zUMIs pipeline.")
+    LOGGER.info("Running the zUMIs pipeline.")
     run_zumi_pipeline(zumi_yaml, zumi_main_path)
 
 if __name__ == '__main__':
