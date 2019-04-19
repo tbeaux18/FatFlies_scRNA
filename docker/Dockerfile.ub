@@ -108,13 +108,6 @@ RUN \
   && NAME=STAR-2.7.0f \
   && wget https://github.com/alexdobin/STAR/archive/${TARBALL} \
   && tar -xzf ${TARBALL} \
-  && cd ${NAME}/source \
+  && cd /${NAME}/source \
   && make STAR \
-  && ln -s /${NAME}/source/STAR /usr/local/bin/STAR \
-  && cd /
-
-
-RUN \
-  apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install -y git
+  && ln -s /${NAME}/source/STAR /usr/local/bin/STAR
