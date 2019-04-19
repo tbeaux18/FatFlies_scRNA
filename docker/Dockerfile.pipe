@@ -8,4 +8,5 @@ VOLUME ["/pipeline"]
 
 WORKDIR /pipeline/FatFlies_scRNA
 
-RUN python3 scrna_configure_pipeline.py -z /pipeline/zUMIs /pipeline/SampleSheet.csv
+
+CMD ["python3", "scrna_configure_pipeline", "-z", "/pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
