@@ -104,14 +104,13 @@ RUN \
 
 # install STAR aligner
 RUN \
-  cd /usr/local/bin \
-  && TARBALL=2.7.0f.tar.gz \
+  TARBALL=2.7.0f.tar.gz \
   && NAME=STAR-2.7.0f \
   && wget https://github.com/alexdobin/STAR/archive/${TARBALL} \
   && tar -xzf ${TARBALL} \
   && cd ${NAME}/source \
   && make STAR \
-  && ln -s /${NAME}/source/STAR /usr/local/bin \
+  && ln -s /${NAME}/source/STAR /usr/local/bin/STAR \
   && cd /
 
 
