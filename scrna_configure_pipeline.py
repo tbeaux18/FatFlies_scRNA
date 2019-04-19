@@ -97,7 +97,7 @@ def setup_yaml():
 
 
 
-def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
+def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
     """ this creates the exchange of information from the SampleSheetParser
         object to the ZumiConfigBuilder object
     """
@@ -125,7 +125,7 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj):
     zumi_config_obj.update_top_level(
         sam_header_info['run_name'],
         zumi_output_dir,
-        16, # threads need to control for
+        threads,
         sam_zumi_info['zum_start_stage']
     )
 
@@ -330,7 +330,8 @@ def main():
     print("Parsing the sample sheet and building the zUMI config file.")
     file_path_info, adapter_info, zumi_yaml = samplesheet_zumi_build(
         sample_sheet_obj,
-        zumi_config_obj
+        zumi_config_obj,
+        threads_avail
     )
 
 
