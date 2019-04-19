@@ -111,7 +111,7 @@ RUN \
   && tar -xzf ${TARBALL} \
   && cd ${NAME}/source \
   && make STAR \
-  && ln -s /${NAME}/source/STAR /usr/local/bin
+  && ln -s /${NAME}/source/STAR /usr/local/bin \
   && cd /
 
 
