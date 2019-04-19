@@ -2,6 +2,9 @@
 FROM ubuntu:r35
 MAINTAINER Timothy Baker <tbaker8@luc.edu>
 
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
 
 RUN mkdir pipeline
 
@@ -10,11 +13,9 @@ VOLUME ["/pipeline"]
 
 # need to track where various git clones will be located
 # need to handle UMIstuffFUN.R updated file to thread at 1 core for UMI collapsing
-RUN git clone https://github.com/sdparekh/zUMIs.git && \
-  mv zUMIs /pipeline
+RUN git clone https://github.com/sdparekh/zUMIs.git /pipeline/zUMIs
 
-RUN git clone https://github.com/tbeaux18/FatFlies_scRNA.git && \
-  mv FatFlies_scRNA /pipeline
+RUN git clone https://github.com/tbeaux18/FatFlies_scRNA.git /pipeline/FatFlies_scRNA
 
 # runs script that takes in sample sheet and performs quality control
 # script runs out of the home directory of the FatFlies_scRNA directory from github
