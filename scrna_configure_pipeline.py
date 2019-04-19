@@ -37,6 +37,7 @@ import shlex
 import argparse
 import subprocess
 import logging
+import multiprocessing as mp
 from collections import OrderedDict
 import yaml
 from yaml.resolver import Resolver
@@ -314,6 +315,13 @@ def main():
     zumi_main_path = args.zumi_path
     LOGGER.info("Input args: %s", args)
 
+    # detecting threads on host machine
+    host_thread_num = mp.cpu_count()
+    LOGGER.info("%d threads detected", host_thread_num)
+
+    # only allowing for half of cores to be used for multi-threading
+    threads_avail = int(host_thread_num / 2)
+
     # intantiating each object
     sample_sheet_obj = SampleSheetParser(sample_sheet)
     zumi_config_obj = ZumiConfigBuilder()
@@ -329,7 +337,7 @@ def main():
     # calls subprocess to run the scrna_qc_pipeline.py script
     print("Running quality control on FASTQ files.")
     run_quality_control(
-        threads=16,
+        threads=threads_avail,
         fastq_r1=file_path_info['fastq_read1'],
         fastq_r2=file_path_info['fastq_read2'],
         trimmed_r1=CURRENT_DIR + file_path_info['trimmed_r1'],
@@ -342,7 +350,7 @@ def main():
     # calls STAR by subprocess to build reference genome index
     print("Building the STAR index.")
     build_star_index(
-        threads=16,
+        threads=threads_avail,
         dmel_index_dir=CURRENT_DIR + '/' + DMEL_INDEX_DIR,
         ref_fasta_file=file_path_info['ref_genome']
     )
