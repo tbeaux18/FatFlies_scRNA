@@ -94,7 +94,9 @@ def run_fastqc(**kwargs):
                         {fastq_read2}""".format(**kwargs)
 
     fastqc_formatted_args = shlex.split(fastqc_command)
-    print("Running FASTQC.")
+
+    LOGGER.info("FASTQC args: %s", fastqc_formatted_args)
+    
     fastqc_process = subprocess.Popen(fastqc_formatted_args, stdout=subprocess.PIPE, \
                                                         stderr=subprocess.PIPE)
     data_out, data_err = fastqc_process.communicate()
@@ -127,7 +129,7 @@ def run_cutadapt(**kwargs):
 
     cutadapt_formatted_args = shlex.split(cutadapt_command)
 
-    print("Running cutadapt.")
+    LOGGER.info("cutadapt args: %s", cutadapt_formatted_args)
 
     cutadapt_process = subprocess.Popen(cutadapt_formatted_args, \
                                             stdout=subprocess.PIPE, \
@@ -147,6 +149,8 @@ def main():
     """
 
     args = arg_parser()
+
+    LOGGER.info("Args passed to script: %s", args)
 
     threads = args.threads
     fastq_r1 = args.fastq_r1

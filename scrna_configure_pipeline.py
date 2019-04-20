@@ -219,6 +219,7 @@ def run_quality_control(**kwargs):
     trim_r2_path = Path(kwargs['trimmed_r2'])
 
     if not trim_r1_path.is_file() and not trim_r2_path.is_file():
+        LOGGER.info("Processed fastq files not detected. Beginning to run QC.")
         subprocess.run(
             run_qc_formatted_args,
             stdout=subprocess.PIPE,
@@ -311,13 +312,15 @@ def run_zumi_pipeline(zumi_yaml, zumi_path):
             stderr=subprocess.PIPE
         )
     else:
-        print("Zumi Yaml file has not been built. Aborting.")
+        LOGGER.info("Zumi Yaml file has not been built. Aborting.")
 
 
 def main():
     """ parses sample sheet object, creates various config files, and tracks threads """
 
     args = arg_parser()
+
+    LOGGER.info("Main pipeline args passed: %s", args)
 
     # creates the representers needed for YAML
     setup_yaml()
