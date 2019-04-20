@@ -2,11 +2,22 @@
 FROM ubuntu:r35
 MAINTAINER Timothy Baker <tbaker8@luc.edu>
 
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
+
 RUN mkdir pipeline
 
-VOLUME ["/pipeline"]
+RUN git clone https://github.com/sdparekh/zUMIs.git
+
+RUN git clone https://github.com/tbeaux18/FatFlies_scRNA.git
+
+RUN mv /zUMIs /pipeline/zUMIs \
+  && mv FatFlies_scRNA /pipeline/FatFlies_scRNA
+
+# VOLUME ["/pipeline"]
 
 WORKDIR /pipeline/FatFlies_scRNA
 
-
-CMD ["python3", "scrna_configure_pipeline.py", "-z", "/pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
+CMD ["python3", "test_docker.py"]
+# CMD ["python3", "scrna_configure_pipeline.py", "-z", "/pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
