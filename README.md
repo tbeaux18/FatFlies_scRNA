@@ -2,45 +2,67 @@
 
 ### Single cell RNA-seq Analysis Pipeline
 
-Single cell RNA-seq analysis is a novel method in next generation sequencing (NGS), bioinformatics, and computational biology. The difference between bulk RNA-seq (RNA-seq) and single-cell RNA-seq (scRNA-seq) is that a transcriptomic library is built and barcoded from one cell compared to lysing a bunch of different cells and mixing their transcripts. While RNA-Seq is incredibly useful for analysing the transcriptome, it only provides an average snapshot of gene expression across a variety of cells. This can make interpretation and extrapolation more difficult and biased when forming conclusions from the data. The benefit of doing scRNA-seq is that you can get a snapshot of a single cell's transcriptome which can allow for more meaningful comparisons across conditions when analysing expression data. Due to this novelty, a gold standard for analysing this data has not emerged. Single cell analysis pipelines will vary depending on the wet-lab protocol; each protocol has it's pros and cons depending on the biological question.
+This pipeline is a wrapper of various tools associated with single cell RNA-seq analysis. The pipeline is optimized for 3' based library preparation methods in NGS for single cell. This pipeline is specifically optimized for CEL-Seq2 libraries that have pseudo-paired reads. I plan to generalize this pipeline for expanded use.
 
-Non-software requirements to use this wrapper pipeline:
-* CEL-Seq2 Libraries
-* Illumina Sequencing
+Current library prep requirements are:
+  * CEL-Seq2
+  * Already lane merged fastq files that result in a single pair of fastqs.
+    * Read 1 FASTQ
+      * The UMI in position 1 - 6
+      * The cell barcode in position 7-12
+    * Read 2 FASTQ
+      * The transcript 1-50 (or the max length of the second record)
+  * Sequenced on Illumina platform
+  * Relatively low throughput due to sample sheet requirements
+      
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+The pipeline is dockerized and contains all the necessary software dependencies to run quality control on raw reads, perform alignment and UMI counting, and run a basic differential expression analysis with a simple experiment design.
+
+On the local machine:
+  * Create a directory that contains the following:
+      * Reference_Genome_FASTA file
+      * Reference_Annotation gtf file
+      * Compressed Read 1 FASTQ (gz)
+      * Compressed Read 2 FASTQ (gz)
+      * SampleSheet.csv
+  * Refer to this repository's wiki on creating the sample sheet
+  * Sample sheet **must** be named SampleSheet.csv
+
+After creating directory and adding the files, change into it and clone this repository.
+```
+cd pipeline_example
+git clone https://github.com/tbeaux18/FatFlies_scRNA.git
+```
+This results in the following directory structure.
+```
+root:pipeline_example example$
+.
+├── FatFlies_scRNA
+├── SampleSheet.csv
+├── read1.fastq.gz
+├── read2.fastq.gz
+├── ref_genome.fa
+└── ref_genome_annotation.gtf
+```
+
+To run the pipeline:
+```
+cd FatFlies_scRNA
+./run_pipeline.sh
+```
+
+Running this command will trigger the docker images to build, and once built, the pipeline will run a docker container which will run the pipeline. The docker images were built to run mostly on Linux/MacOS, and theoretically run on Windows. This pipeline could break if put on AWS due to its own dependencies. 
+
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+Refer to the Sample Sheet Wiki for creating the Sample Sheet
+The only required software is Docker, which the latest installation documentation can be found at this link:
+  * https://docs.docker.com/v17.12/install/
 
-```
-Give examples
-```
 
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
 
 ### Break down into end to end tests
 
