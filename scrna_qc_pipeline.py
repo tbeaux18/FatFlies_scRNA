@@ -30,18 +30,13 @@ import argparse
 import subprocess
 import logging
 
+
+LOGS = 'logs'
 INITIAL_FASTQC_OUTPUT = 'logs/initial_fastqc'
 TRIMMED_FASTQC_OUTPUT = 'logs/trimmed_fastqc'
 
-
-if not os.path.exists(INITIAL_FASTQC_OUTPUT):
-    os.makedirs(INITIAL_FASTQC_OUTPUT)
-    print("Made initial fastqc output directory.")
-
-if not os.path.exists(TRIMMED_FASTQC_OUTPUT):
-    os.makedirs(TRIMMED_FASTQC_OUTPUT)
-    print("Made trimmed fastqc output directory.")
-
+if not os.path.exists(LOGS):
+    os.mkdir(LOGS)
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -50,6 +45,13 @@ FILE_HANDLER = logging.FileHandler("logs/qc_log.log")
 FILE_HANDLER.setFormatter(FORMATTER)
 LOGGER.addHandler(FILE_HANDLER)
 
+if not os.path.exists(INITIAL_FASTQC_OUTPUT):
+    os.makedirs(INITIAL_FASTQC_OUTPUT)
+    LOGGER.info("Made initial fastqc output directory.")
+
+if not os.path.exists(TRIMMED_FASTQC_OUTPUT):
+    os.makedirs(TRIMMED_FASTQC_OUTPUT)
+    LOGGER.info("Made trimmed fastqc output directory.")
 
 def arg_parser():
     """ Argument input from command line """
@@ -75,6 +77,35 @@ def arg_parser():
 
 
 
+
+def parse_fastqc_results(fastqc_path):
+    """ parses the fastqc summary file and stores results
+
+        There are two sub directories to parse from, the initial
+        and the trimmed.
+
+        Initial:
+            ./logs/initial_fastqc/<basename>_fastqc/summary.txt
+        Trimmed:
+            ./logs/trimmed_fastqc/<basename>_fastqc/summary.txt
+        params:
+            fastqc_path : path to summary.txt
+        returns:
+            summary_results : dict of results
+    """
+
+    summary_results = {}
+
+    # needs to be abs/path/to/summary.txt
+    with open(fastqc_path, 'r') as fastqc_file:
+        for line in fastqc_file:
+            line = line.strip().split('\t')
+            summary_results[line[1]] = line[0]
+
+    return summary_results
+
+
+
 def run_fastqc(**kwargs):
     """ runs fastqc with the provided args from build_fastqc_args()
         params:
@@ -96,7 +127,7 @@ def run_fastqc(**kwargs):
     fastqc_formatted_args = shlex.split(fastqc_command)
 
     LOGGER.info("FASTQC args: %s", fastqc_formatted_args)
-    
+
     fastqc_process = subprocess.Popen(fastqc_formatted_args, stdout=subprocess.PIPE, \
                                                         stderr=subprocess.PIPE)
     data_out, data_err = fastqc_process.communicate()
@@ -171,6 +202,9 @@ def main():
         fastq_read1=fastq_r1,
         fastq_read2=fastq_r2
     )
+
+
+
 
     LOGGER.info("Running cutadapt.")
 
