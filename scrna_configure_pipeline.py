@@ -41,7 +41,7 @@ import multiprocessing as mp
 from collections import OrderedDict
 import yaml
 from yaml.resolver import Resolver
-from samplesheet_parser import SampleSheetParser
+from sample_sheet_parser import SampleSheetParser
 from zumi_config_builder import ZumiConfigBuilder
 
 CURRENT_DIR = os.getcwd()
