@@ -9,7 +9,7 @@ chmod a+x "${mount_dir}"/docker/build_me.sh
 
 parentdir="$(dirname "$mount_dir")"
 
-sudo docker run \
+docker run \
   --name=scrna_pipeline \
   -d \
   -v "${parentdir}":/pipeline \
