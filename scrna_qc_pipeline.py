@@ -31,12 +31,18 @@ import subprocess
 import logging
 
 
-LOGS = 'logs'
+
 INITIAL_FASTQC_OUTPUT = 'logs/initial_fastqc'
 TRIMMED_FASTQC_OUTPUT = 'logs/trimmed_fastqc'
 
-if not os.path.exists(LOGS):
-    os.mkdir(LOGS)
+if not os.path.exists(INITIAL_FASTQC_OUTPUT):
+    os.makedirs(INITIAL_FASTQC_OUTPUT)
+
+
+if not os.path.exists(TRIMMED_FASTQC_OUTPUT):
+    os.makedirs(TRIMMED_FASTQC_OUTPUT)
+
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -45,13 +51,7 @@ FILE_HANDLER = logging.FileHandler("logs/qc_log.log")
 FILE_HANDLER.setFormatter(FORMATTER)
 LOGGER.addHandler(FILE_HANDLER)
 
-if not os.path.exists(INITIAL_FASTQC_OUTPUT):
-    os.makedirs(INITIAL_FASTQC_OUTPUT)
-    LOGGER.info("Made initial fastqc output directory.")
 
-if not os.path.exists(TRIMMED_FASTQC_OUTPUT):
-    os.makedirs(TRIMMED_FASTQC_OUTPUT)
-    LOGGER.info("Made trimmed fastqc output directory.")
 
 def arg_parser():
     """ Argument input from command line """
