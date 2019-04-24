@@ -2,7 +2,8 @@
 library("edgeR")
 
 # arg1 = count data
-# arg2 = design data
+# arg2 = cell data
+# arg3 = test groups
 args = commandArgs(trailingOnly=TRUE)
 
 # All count data from zUMIs pipeline
@@ -10,8 +11,6 @@ AllCounts <- readRDS(args[1])
 
 # supplied from SampleSheet.csv at beginning of pipeline
 design.data <- read.csv(args[2], header=TRUE, sep=",")
-
-
 
 # sorting the design matrix lexographically by cell barcode sequence 
 sorted.design <- design.data[order(design.data[,"barcode_sequence"]),]
@@ -43,10 +42,16 @@ umi.group <- substr(colnames(gfp.umi.count), 3, 3)
 
 
 
-run_edgeR_diff_exp <- function(count_matrix, group) {
+run_edgeR_diff_exp <- function(count_matrix, group, replicate_num) {
   
   # instantiates DGEList object
   y <- DGEList(counts=count_matrix, group=group)
+  
+  # filtering low expressed genes across conditions
+  # keep genes that have at least 1 cpm in at least greater than or equal to rep number per condition
+  # unsupervised approach
+  keep <- rowSums(cpm(y) > 1) >= replicate_num
+  y <- y[keep, , keep.lib.sizes=FALSE]
   
   # normalizing scaling factors using modified TMM to handle zero inflation
   y <- calcNormFactors(y, method="TMMwzp")
@@ -71,7 +76,16 @@ run_edgeR_diff_exp <- function(count_matrix, group) {
   # filtering results based on FDR significance
   sig_results <- glm_results[glm_results$table$FDR < .05,]
   write.csv(sig_results, file='sig_diff_exp_results.csv')
+  
+  # create smear plot of DEGs at 0.05 threshold
+  deGenes <- decideTestsDGE(lrt, p=0.05)
+  deGenes <- rownames(lrt)[as.logical(deGenes)]
+  jpeg(file="deg_smear.jpeg")
+  plotSmear(lrt, de.tags=deGenes)
+  abline(h=c(-1, 1), col=2)
 }
 
 
-run_edgeR_diff_exp(gfp.umi.count, umi.group)
+
+run_edgeR_diff_exp(gfp.umi.count, umi.group, 4)
+dev.off()
