@@ -295,6 +295,19 @@ def run_zumi_pipeline(zumi_yaml, zumi_path):
             None
     """
 
+    umi_file_cmd = """mv /pipeline/FatFlies_scRNA/UMIstuffFUN.R
+                            {zumi_path}/UMIstuffFUN.R""".format(
+                                zumi_path=zumi_path
+                            )
+
+    umi_file_formatted_args = shlex.split(umi_file_cmd)
+
+    subprocess.run(
+        umi_file_formatted_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
     zumi_cmd = """bash {zumi_path}/zUMIs-master.sh
                 -y {zumi_config_yaml}""".format(
                     zumi_path=zumi_path,

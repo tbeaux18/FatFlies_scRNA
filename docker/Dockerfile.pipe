@@ -16,6 +16,4 @@ RUN mv /zUMIs /umi_pipeline/zUMIs \
 
 WORKDIR /pipeline/FatFlies_scRNA
 
-RUN /pipeline/FatFlies_scRNA/UMIstuffFUN.R /umi_pipeline/zUMIs/UMIstuffFUN.R
-
-# CMD ["python3", "scrna_configure_pipeline.py", "-z", "/umi_pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
+CMD ["python3", "scrna_configure_pipeline.py", "-z", "/umi_pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
