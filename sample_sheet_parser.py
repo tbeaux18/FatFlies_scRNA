@@ -54,6 +54,7 @@ class SampleSheetParser:
         run_parsing_methods() : runs all instance methods
         create_adapter_whitelist() : creates the barcode white list for zUMI from barcode_seq dict
         create_cell_data_csv() : creates the csv file containing metadata for each cell
+        create_design_csv() : creates experiment design csv file for differential expression
         return_offsets() : returns offset position dict
         return_header_info() : returns header info
         return_zumi_input() : returns zumi config input info
@@ -305,7 +306,7 @@ class SampleSheetParser:
         with open(full_design_path,'w+') as design_file:
             out = "test,control\n" + \
                   self.diff_input['test_group'] + "," + \
-                  self.diff_input['control_group']
+                  self.diff_input['control_group'] + '\n'
             design_file.write(out)   
 
 
