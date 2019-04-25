@@ -3,9 +3,9 @@
 
 mount_dir=$(pwd)
 
-chmod a+x "${mount_dir}"/docker/build_me.sh
-
-./docker/build_me.sh
+# chmod a+x "${mount_dir}"/docker/build_me.sh
+#
+# ./docker/build_me.sh
 
 parentdir="$(dirname "$mount_dir")"
 
