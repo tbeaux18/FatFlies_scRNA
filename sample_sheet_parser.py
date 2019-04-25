@@ -53,6 +53,7 @@ class SampleSheetParser:
         parse_sample_sheet_data() : stores cell data
         run_parsing_methods() : runs all instance methods
         create_adapter_whitelist() : creates the barcode white list for zUMI from barcode_seq dict
+        create_cell_data_csv() : creates the csv file containing metadata for each cell
         return_offsets() : returns offset position dict
         return_header_info() : returns header info
         return_zumi_input() : returns zumi config input info
@@ -280,7 +281,19 @@ class SampleSheetParser:
             columns=['barcode_sequence'],
             header=False,
             index=False
-    )
+        )
+        
+    def create_cell_data_csv(self, cell_data_path):
+        """ create cell_data csv file """
+    
+        # need to direct toward specific path
+        # will only exist in Docker
+        full_cell_data_path = cell_data_path + '/cell_data.csv'
+        self.cell_data.to_csv(
+                full_cell_data_path,
+                header=True,
+                index=False
+        )
 
 
     def return_offsets(self):
