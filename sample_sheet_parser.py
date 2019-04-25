@@ -13,7 +13,7 @@ samplesheet_parser.py
 """
 
 import pandas as pd
-
+import csv 
 
 class SampleSheetParser:
     """
@@ -53,6 +53,8 @@ class SampleSheetParser:
         parse_sample_sheet_data() : stores cell data
         run_parsing_methods() : runs all instance methods
         create_adapter_whitelist() : creates the barcode white list for zUMI from barcode_seq dict
+        create_cell_data_csv() : creates the csv file containing metadata for each cell
+        create_design_csv() : creates experiment design csv file for differential expression
         return_offsets() : returns offset position dict
         return_header_info() : returns header info
         return_zumi_input() : returns zumi config input info
@@ -199,23 +201,22 @@ class SampleSheetParser:
 
     def parse_sample_sheet_diffexp(self):
         """ parsing the diff_expression section of the sample sheet """
-
         with open(self.sample_sheet, 'r') as csv_handle:
-
+            
             diffexp_byte_load = (\
             self.offset_pos['adapters_offset'] - self.offset_pos['diff_offset']\
             ) - 28
-
+            
             csv_handle.seek(self.offset_pos['diff_offset'])
+            
+            csv_as_string = csv_handle.readlines(diffexp_byte_load)
+            reader = csv.reader(csv_as_string, skipinitialspace = True)
 
-            for line in csv_handle.readlines(diffexp_byte_load):
-                line_lst = line.split(',')
+            for line_lst in reader:
                 if line_lst[0].lower() == 'test_group':
-                    # need to fix this
-                    self.diff_input['test_group'] = list(line_lst[1])
-
+                    self.diff_input['test_group'] = '\"'+str(line_lst[1])+'\"'
                 if line_lst[0].lower() == 'control_group':
-                    self.diff_input['control_group'] = list(line_lst[1])
+                    self.diff_input['control_group'] = '\"'+str(line_lst[1])+'\"'
 
 
     def parse_sample_sheet_adapters(self):
@@ -280,7 +281,33 @@ class SampleSheetParser:
             columns=['barcode_sequence'],
             header=False,
             index=False
-    )
+        )
+        
+        
+    def create_cell_data_csv(self, cell_data_path):
+        """ create cell_data csv file """
+    
+        # need to direct toward specific path
+        # will only exist in Docker
+        full_cell_data_path = cell_data_path + '/cell_data.csv'
+        self.cell_data.to_csv(
+                full_cell_data_path,
+                header=True,
+                index=False
+        )
+        
+        
+    def create_design_csv(self, design_path):
+        """ create design csv file """
+
+        # need to direct toward specific path
+        # will only exist in Docker
+        full_design_path = design_path + '/design.csv'
+        with open(full_design_path,'w+') as design_file:
+            out = "test,control\n" + \
+                  self.diff_input['test_group'] + "," + \
+                  self.diff_input['control_group'] + '\n'
+            design_file.write(out)   
 
 
     def return_offsets(self):
