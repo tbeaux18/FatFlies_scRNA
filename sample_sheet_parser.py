@@ -282,6 +282,7 @@ class SampleSheetParser:
             index=False
         )
         
+        
     def create_cell_data_csv(self, cell_data_path):
         """ create cell_data csv file """
     
@@ -293,6 +294,19 @@ class SampleSheetParser:
                 header=True,
                 index=False
         )
+        
+        
+    def create_design_csv(self, design_path):
+        """ create design csv file """
+
+        # need to direct toward specific path
+        # will only exist in Docker
+        full_design_path = design_path + '/design.csv'
+        with open(full_design_path,'w+') as design_file:
+            out = "test,control\n" + \
+                  self.diff_input['test_group'] + "," + \
+                  self.diff_input['control_group']
+            design_file.write(out)   
 
 
     def return_offsets(self):
