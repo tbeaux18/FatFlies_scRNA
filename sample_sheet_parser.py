@@ -13,7 +13,7 @@ samplesheet_parser.py
 """
 
 import pandas as pd
-
+import csv 
 
 class SampleSheetParser:
     """
@@ -200,23 +200,22 @@ class SampleSheetParser:
 
     def parse_sample_sheet_diffexp(self):
         """ parsing the diff_expression section of the sample sheet """
-
         with open(self.sample_sheet, 'r') as csv_handle:
-
+            
             diffexp_byte_load = (\
             self.offset_pos['adapters_offset'] - self.offset_pos['diff_offset']\
             ) - 28
-
+            
             csv_handle.seek(self.offset_pos['diff_offset'])
+            
+            csv_as_string = csv_handle.readlines(diffexp_byte_load)
+            reader = csv.reader(csv_as_string, skipinitialspace = True)
 
-            for line in csv_handle.readlines(diffexp_byte_load):
-                line_lst = line.split(',')
+            for line_lst in reader:
                 if line_lst[0].lower() == 'test_group':
-                    # need to fix this
-                    self.diff_input['test_group'] = list(line_lst[1])
-
+                    self.diff_input['test_group'] = line_lst[1]
                 if line_lst[0].lower() == 'control_group':
-                    self.diff_input['control_group'] = list(line_lst[1])
+                    self.diff_input['control_group'] = line_lst[1]
 
 
     def parse_sample_sheet_adapters(self):
