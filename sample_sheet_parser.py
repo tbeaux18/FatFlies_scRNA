@@ -213,9 +213,9 @@ class SampleSheetParser:
 
             for line_lst in reader:
                 if line_lst[0].lower() == 'test_group':
-                    self.diff_input['test_group'] = Str(line_lst[1])
+                    self.diff_input['test_group'] = '\"'+str(line_lst[1])+'\"'
                 if line_lst[0].lower() == 'control_group':
-                    self.diff_input['control_group'] = Str(line_lst[1])
+                    self.diff_input['control_group'] = '\"'+str(line_lst[1])+'\"'
 
 
     def parse_sample_sheet_adapters(self):
