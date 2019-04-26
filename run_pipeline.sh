@@ -10,7 +10,6 @@ mount_dir=$(pwd)
 parentdir="$(dirname "$mount_dir")"
 
 docker run \
-  --name=scrna_pipeline \
   -d \
   -v "${parentdir}":/pipeline \
   ubuntur35:pipeline
