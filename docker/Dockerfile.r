@@ -63,15 +63,17 @@ RUN apt-get update \
 RUN apt-get update \
   && apt-get -y install \
   libcairo2-dev \
-  libxt-dev 
+  libxt-dev
 
 # installing R packages for zUMI to run
 RUN \
   R -e "install.packages(c( \
           'yaml','shiny','shinythemes','shinyBS','ggplot2','mclust','dplyr', \
-          'cowplot','Matrix','BiocManager','devtools','stringdist','data.table'))" \
+          'cowplot','Matrix','BiocManager','devtools','stringdist','data.table', \
+          'plotly', 'crosstalk'))" \
   && R -e "BiocManager::install(c( \
             'GenomicRanges','GenomicFeatures', \
-            'GenomicAlignments','AnnotationDbi','Rsubread'))" \
+            'GenomicAlignments','AnnotationDbi','Rsubread', \
+            'Glimma', 'edgeR'))" \
   && R -e "devtools::install_github('hadley/multidplyr')" \
   && R -e "devtools::install_github('VPetukhov/ggrastr')"
