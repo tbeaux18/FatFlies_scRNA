@@ -201,9 +201,9 @@ build_interactive_plots <- function(sub.umi.count.matrix, cell.data.df, comparis
 
 
 # can use for testing, just replace first arg
-args = c('/Users/tim.baker/Documents/loyola/FatFlies_scRNA/docker_run_20190425/zUMIs_output/expression/dnpf_scrna_run.dgecounts.rds',
-         'cell_data.csv',
-         'design.csv')
+# args = c('/Users/tim.baker/Documents/loyola/FatFlies_scRNA/docker_run_20190425/zUMIs_output/expression/dnpf_scrna_run.dgecounts.rds',
+         # 'cell_data.csv',
+         # 'design.csv')
 
 # All count data from zUMIs pipeline
 all.counts <- readRDS(args[1])
