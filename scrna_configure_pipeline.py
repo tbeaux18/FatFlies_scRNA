@@ -126,7 +126,10 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
     # need to make zumi output directory
 
     zumi_output_dir = CURRENT_DIR + '/' + sam_header_info['basename'] + '_zumi_output'
-    os.mkdir(zumi_output_dir)
+
+    if not os.path.exists(zumi_output_dir):
+        os.mkdir(zumi_output_dir)
+        print("Made zumi output directory.")
 
 
     all_count_matrix_path = zumi_output_dir + \
