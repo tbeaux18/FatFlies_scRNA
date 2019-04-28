@@ -6,6 +6,7 @@ library("ggplot2")
 library("plotly")
 library("crosstalk")
 library("Glimma")
+library("DT")
 
 # arg1 = count data
 # arg2 = cell data
