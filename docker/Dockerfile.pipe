@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y git
 
 RUN \
-  R -e "install.packages('DT')"
+  R -e "install.packages(c('DT', 'stringr', 'htmltools')"
 
 RUN mkdir umi_pipeline
 
