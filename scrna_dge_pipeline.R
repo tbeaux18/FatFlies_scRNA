@@ -7,6 +7,8 @@ library("plotly")
 library("crosstalk")
 library("Glimma")
 library("DT")
+library("stringr")
+library("htmltools")
 
 # arg1 = count data
 # arg2 = cell data
