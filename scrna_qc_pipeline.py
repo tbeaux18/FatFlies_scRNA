@@ -205,7 +205,6 @@ def main():
 
 
 
-
     LOGGER.info("Running cutadapt.")
 
     run_cutadapt(

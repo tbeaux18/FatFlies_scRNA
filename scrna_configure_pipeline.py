@@ -111,7 +111,11 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
     sample_sheet_obj.run_parsing_methods()
 
     # creates the barcode whitelist text file for zumi
+    # creates the cell data csv to use for differential expression
     sample_sheet_obj.create_adapter_whitelist(CURRENT_DIR)
+
+    cell_path_info = sample_sheet_obj.create_cell_data_csv(CURRENT_DIR)
+    design_path_info = sample_sheet_obj.create_design_csv(CURRENT_DIR)
 
     # returning all attribute information
     sam_header_info = sample_sheet_obj.return_header_info()
@@ -123,6 +127,13 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
 
     zumi_output_dir = CURRENT_DIR + '/' + sam_header_info['basename'] + '_zumi_output'
     os.mkdir(zumi_output_dir)
+
+
+    all_count_matrix_path = zumi_output_dir + \
+        "/zUMIs_output/expression/" + \
+        sam_header_info['run_name'] + \
+        ".dgecounts.rds"
+
 
     # ./basename_zumi_output
     zumi_config_obj.update_top_level(
@@ -177,7 +188,8 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
 
     # after all objects are parsed and yaml file is written, pass the path info
     # and adapter info back as dicts to properly run downstream scripts
-    return sam_path_info, sam_adapter_info, zumi_config_yaml_path
+    return sam_path_info, sam_adapter_info, zumi_config_yaml_path, \
+        cell_path_info, design_path_info, all_count_matrix_path
 
 
 def run_quality_control(**kwargs):
@@ -328,6 +340,41 @@ def run_zumi_pipeline(zumi_yaml, zumi_path):
         LOGGER.info("Zumi Yaml file has not been built. Aborting.")
 
 
+
+
+def run_diff_expression_rscript(count_data_path, cell_data_path, design_data_path):
+    """ runs the differential expression Rscript
+
+        params:
+            count_data_path : path/to/zumi_all_count_matrix.RDS
+            cell_data_path : path/to/cell_data.csv from SampleSheetParser
+            design_data_path : path/to/design_data.txt from SampleSheetParser
+
+    """
+    diff_exp_cmd = """Rscript
+                        scrna_dge_pipeline.R
+                        {count_path}
+                        {cell_path}
+                        {design_path}""".format(
+                            count_path=count_data_path,
+                            cell_path=cell_data_path,
+                            design_path=design_data_path
+                        )
+
+    diff_exp_formatted_args = shlex.split(diff_exp_cmd)
+
+    LOGGER.info("Diff Expression args: %s", diff_exp_formatted_args)
+
+    subprocess.run(
+        diff_exp_formatted_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+
+
+
+
 def main():
     """ parses sample sheet object, creates various config files, and tracks threads """
 
@@ -347,6 +394,7 @@ def main():
     LOGGER.info("%d threads detected", host_thread_num)
 
     # only allowing for half of cores to be used for multi-threading
+    # need to eventually include option in sample sheet
     threads_avail = int(host_thread_num / 2)
 
     # intantiating each object
@@ -355,7 +403,8 @@ def main():
 
     # parsing SampleSheetParser and exchanging information with ZumiConfigBuilder
     LOGGER.info("Parsing the sample sheet and building the zUMI config file.")
-    file_path_info, adapter_info, zumi_yaml = samplesheet_zumi_build(
+    file_path_info, adapter_info, zumi_yaml, cell_path_full, \
+    design_path_full, zumi_output_matrix = samplesheet_zumi_build(
         sample_sheet_obj,
         zumi_config_obj,
         threads_avail
@@ -383,10 +432,15 @@ def main():
         ref_fasta_file=file_path_info['ref_genome']
     )
 
-
     # zumi yaml path is returned from samplesheet_zumi_build after writing the file
     LOGGER.info("Running the zUMIs pipeline.")
     run_zumi_pipeline(zumi_yaml, zumi_main_path)
+
+
+    LOGGER.info("Performing Differential Expression Analysis")
+    run_diff_expression_rscript(zumi_output_matrix, cell_path_full, design_path_full)
+
+
 
 if __name__ == '__main__':
     main()

@@ -12,8 +12,9 @@ samplesheet_parser.py
         - need to handle parsing a lot better; perhaps break into subclasses
 """
 
+import csv
 import pandas as pd
-import csv 
+
 
 class SampleSheetParser:
     """
@@ -202,15 +203,15 @@ class SampleSheetParser:
     def parse_sample_sheet_diffexp(self):
         """ parsing the diff_expression section of the sample sheet """
         with open(self.sample_sheet, 'r') as csv_handle:
-            
+
             diffexp_byte_load = (\
             self.offset_pos['adapters_offset'] - self.offset_pos['diff_offset']\
             ) - 28
-            
+
             csv_handle.seek(self.offset_pos['diff_offset'])
-            
+
             csv_as_string = csv_handle.readlines(diffexp_byte_load)
-            reader = csv.reader(csv_as_string, skipinitialspace = True)
+            reader = csv.reader(csv_as_string, skipinitialspace=True)
 
             for line_lst in reader:
                 if line_lst[0].lower() == 'test_group':
@@ -282,33 +283,34 @@ class SampleSheetParser:
             header=False,
             index=False
         )
-        
-        
+
     def create_cell_data_csv(self, cell_data_path):
         """ create cell_data csv file """
-    
+
         # need to direct toward specific path
         # will only exist in Docker
         full_cell_data_path = cell_data_path + '/cell_data.csv'
         self.cell_data.to_csv(
-                full_cell_data_path,
-                header=True,
-                index=False
+            full_cell_data_path,
+            header=True,
+            index=False
         )
-        
-        
+
+        return full_cell_data_path
+
     def create_design_csv(self, design_path):
         """ create design csv file """
 
         # need to direct toward specific path
         # will only exist in Docker
         full_design_path = design_path + '/design.csv'
-        with open(full_design_path,'w+') as design_file:
+        with open(full_design_path, 'w+') as design_file:
             out = "test,control\n" + \
                   self.diff_input['test_group'] + "," + \
                   self.diff_input['control_group'] + '\n'
-            design_file.write(out)   
+            design_file.write(out)
 
+        return full_design_path
 
     def return_offsets(self):
         """ returns offset position info """
