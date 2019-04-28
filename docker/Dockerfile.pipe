@@ -13,9 +13,9 @@ RUN mkdir umi_pipeline
 
 RUN git clone https://github.com/sdparekh/zUMIs.git
 
-RUN mv /zUMIs /umi_pipeline/zUMIs \
-  && cd /umi_pipeline/zUMIs \
-  && mv /umi_pipeline/zUMIs/UMIstuffFUN.R /umi_pipeline/zUMIs/UMIstuffFUN.DONTUSE.R
+# RUN mv /zUMIs /umi_pipeline/zUMIs \
+#  && cd /umi_pipeline/zUMIs \
+#  && mv /umi_pipeline/zUMIs/UMIstuffFUN.R /umi_pipeline/zUMIs/UMIstuffFUN.DONTUSE.R
 
 WORKDIR /pipeline/FatFlies_scRNA
 
