@@ -10,7 +10,7 @@ cd docker && ./build_me.sh && cd ../
 parentdir="$(dirname "$mount_dir")"
 
 docker run \
-  --user $(id -u):$(id -g)
+  --user $(id -u):$(id -g) \
   -d \
   -v "${parentdir}":/pipeline \
   ubuntur35:pipeline
