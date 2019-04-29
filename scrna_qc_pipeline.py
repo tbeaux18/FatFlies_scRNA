@@ -128,14 +128,19 @@ def run_fastqc(**kwargs):
 
     LOGGER.info("FASTQC args: %s", fastqc_formatted_args)
 
-    fastqc_process = subprocess.Popen(fastqc_formatted_args, stdout=subprocess.PIPE, \
-                                                        stderr=subprocess.PIPE)
-    data_out, data_err = fastqc_process.communicate()
+    with open('./logs/fastqc-stdout.txt', 'ab+') as fastqc_stdout:
+        fastqc_process = subprocess.Popen(
+            fastqc_formatted_args,
+            bufsize=20,
+            stdout=fastqc_stdout,
+            stderr=fastqc_stdout
+        )
+        fastqc_process.communicate()
 
     # may need to fix output log location
-    with open('./logs/fastqc-stdout.txt', 'wb') as output:
-        output.write(data_out)
-        output.write(data_err)
+    # with open('./logs/fastqc-stdout.txt', 'wb') as output:
+    #     output.write(data_out)
+    #     output.write(data_err)
 
 
 
@@ -162,15 +167,19 @@ def run_cutadapt(**kwargs):
 
     LOGGER.info("cutadapt args: %s", cutadapt_formatted_args)
 
-    cutadapt_process = subprocess.Popen(cutadapt_formatted_args, \
-                                            stdout=subprocess.PIPE, \
-                                            stderr=subprocess.PIPE)
-    data_out, data_err = cutadapt_process.communicate()
+    with open('./logs/cutadapt-stdout.txt', 'ab') as cutadapt_stdout:
+        cutadapt_process = subprocess.Popen(
+            cutadapt_formatted_args,
+            bufsize=20,
+            stdout=cutadapt_stdout,
+            stderr=cutadapt_stdout
+        )
+        cutadapt_process.communicate()
 
     # may need to fix log location
-    with open('./logs/cutadapt-stdout.txt', 'ab') as output:
-        output.write(data_out)
-        output.write(data_err)
+    # with open('./logs/cutadapt-stdout.txt', 'ab') as output:
+    #     output.write(data_out)
+    #     output.write(data_err)
 
 
 

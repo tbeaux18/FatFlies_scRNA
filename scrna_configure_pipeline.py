@@ -235,11 +235,16 @@ def run_quality_control(**kwargs):
 
     if not trim_r1_path.is_file() and not trim_r2_path.is_file():
         LOGGER.info("Processed fastq files not detected. Beginning to run QC.")
-        subprocess.run(
-            run_qc_formatted_args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+
+        with open('./logs/qc_wrapper_stdout.txt', 'ab+') as qc_wrap_stdout:
+            qc_wrap_process = subprocess.Popen(
+                run_qc_formatted_args,
+                bufsize=10,
+                stdout=qc_wrap_stdout,
+                stderr=qc_wrap_stdout
+            )
+            qc_wrap_process.communicate()
+
     else:
         LOGGER.info("Processed fastq files detected.")
 
@@ -276,12 +281,15 @@ def build_star_index(**kwargs):
     if not idx_file.is_file():
         LOGGER.info("Genome index not detected.")
         LOGGER.info("Building genome index.")
-        subprocess.run(
-            star_idx_formatted_args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
 
+        with open('./logs/star_index_std.txt', 'ab+') as star_stdout:
+            star_index_process = subprocess.Popen(
+                star_idx_formatted_args,
+                bufsize=50,
+                stdout=star_stdout,
+                stderr=star_stdout
+            )
+            star_index_process.communicate()
     else:
         LOGGER.info("Genome index detected.")
         LOGGER.info("Checking if index is built with same fasta file.")
@@ -334,11 +342,16 @@ def run_zumi_pipeline(zumi_yaml, zumi_path):
     LOGGER.info("zUMI args: %s", zumi_formatted_args)
 
     if Path(zumi_yaml).is_file():
-        subprocess.run(
-            zumi_formatted_args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+
+        with open('./logs/zumi_stdout.txt', 'ab+') as zumi_output:
+            zumi_process = subprocess.Popen(
+                zumi_formatted_args,
+                bufsize=50,
+                stdout=zumi_output,
+                stderr=zumi_output
+            )
+            zumi_process.communicate()
+
     else:
         LOGGER.info("Zumi Yaml file has not been built. Aborting.")
 
@@ -368,13 +381,14 @@ def run_diff_expression_rscript(count_data_path, cell_data_path, design_data_pat
 
     LOGGER.info("Diff Expression args: %s", diff_exp_formatted_args)
 
-    subprocess.run(
-        diff_exp_formatted_args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-
-
+    with open('./logs/diff_exp_stdout.txt', 'ab+') as diff_stdout:
+        diff_exp_process = subprocess.Popen(
+            diff_exp_formatted_args,
+            bufsize=10,
+            stdout=diff_stdout,
+            stderr=diff_stdout
+        )
+        diff_exp_process.communicate()
 
 
 
