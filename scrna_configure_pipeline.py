@@ -384,7 +384,7 @@ def run_diff_expression_rscript(count_data_path, cell_data_path, design_data_pat
     with open('./logs/diff_exp_stdout.txt', 'ab+') as diff_stdout:
         diff_exp_process = subprocess.Popen(
             diff_exp_formatted_args,
-            bufsize=10,
+            bufsize=2,
             stdout=diff_stdout,
             stderr=diff_stdout
         )
