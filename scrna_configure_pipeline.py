@@ -105,7 +105,7 @@ def samplesheet_zumi_build(sample_sheet_obj, zumi_config_obj, threads):
         object to the ZumiConfigBuilder object
     """
 
-    additional_star_params = "--limitOutSJcollapsed 2000000 --limitSjdbInsertNsj 2000000"
+    additional_star_params = "--limitOutSJcollapsed 3000000 --limitSjdbInsertNsj 3000000"
 
     # must run initially to set SampleSheetParser attributes
     sample_sheet_obj.run_parsing_methods()
