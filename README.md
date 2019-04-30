@@ -22,9 +22,15 @@ The pipeline is dockerized and contains all the necessary software dependencies 
 
 ### Prerequisites
 
-Refer to the Sample Sheet Wiki for creating the Sample Sheet
-The only required software is Docker, which the latest installation documentation can be found at this link:
+* Refer to the Sample Sheet README Wiki for creating the Sample Sheet
+
+* Docker
   * https://docs.docker.com/v17.12/install/
+  * Install per their instructions
+  * If installing on Linux machine, must have superuser access to create and add users as a group
+    * https://docs.docker.com/install/linux/linux-postinstall/
+  * Docker commands in this repository are **not** ran as sudo
+  * If running this repository on AWS, docker may fail due to AWS intricacies
   
 ### Host machine directory setup
 
@@ -32,8 +38,8 @@ On the local machine:
   * Create a directory that contains the following:
       * Reference_Genome_FASTA file
       * Reference_Annotation gtf file
-      * Compressed Read 1 FASTQ (gz)
-      * Compressed Read 2 FASTQ (gz)
+      * Compressed and Lane Merged Read 1 FASTQ (gz)
+      * Compressed and Lane Merged Read 2 FASTQ (gz)
       * SampleSheet.csv
   * Refer to this repository's wiki **Sample Sheet README** on creating the sample sheet
   * Sample sheet **must** be named SampleSheet.csv
@@ -89,12 +95,31 @@ By running this command:
   * Logs are outputted for each step and are located in ~/Fatflies_scRNA/logs directory
 
 
+### Limitations and Future Development
+
+* Robust error handling will be included
+* Sample sheet and pipeline usage will expand to include:
+  * Different library preparation methods
+  * More zUMIs parameters for customization
+  * Different entrypoints
+
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+### Code languages to build repository
+
+* [python3] (https://www.python.org/download/releases/3.0/)
+* [bash] (https://www.gnu.org/software/bash/)
+* [R] (https://www.r-project.org/)
+* [Docker] (https://www.docker.com/)
+
+### Docker container software
+
+* [FASTQC] (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+* [Cutadapt] (https://cutadapt.readthedocs.io/en/stable/) - python3
+* [zUMIs] (https://github.com/sdparekh/zUMIs)
+* [STAR] (https://github.com/alexdobin/STAR)
+* [Rsubread] (https://bioconductor.org/packages/release/bioc/html/Rsubread.html) - featureCounts
 
 ## Authors
 
