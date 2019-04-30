@@ -16,4 +16,4 @@ docker run \
   -v "${parentdir}":/pipeline \
   ubuntur35:pipeline
 
-docker run --rm scrna_pipeline
+docker container rm scrna_pipeline
