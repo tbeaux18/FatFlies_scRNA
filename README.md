@@ -20,6 +20,14 @@ Current library prep requirements are:
 
 The pipeline is dockerized and contains all the necessary software dependencies to run quality control on raw reads, perform alignment and UMI counting, and run a basic differential expression analysis with a simple experiment design.
 
+### Prerequisites
+
+Refer to the Sample Sheet Wiki for creating the Sample Sheet
+The only required software is Docker, which the latest installation documentation can be found at this link:
+  * https://docs.docker.com/v17.12/install/
+  
+### Host machine directory setup
+
 On the local machine:
   * Create a directory that contains the following:
       * Reference_Genome_FASTA file
@@ -27,10 +35,10 @@ On the local machine:
       * Compressed Read 1 FASTQ (gz)
       * Compressed Read 2 FASTQ (gz)
       * SampleSheet.csv
-  * Refer to this repository's wiki on creating the sample sheet
+  * Refer to this repository's wiki **Sample Sheet README** on creating the sample sheet
   * Sample sheet **must** be named SampleSheet.csv
 
-After creating directory and adding the files, change into it and clone this repository.
+After creating directory and adding the files, change into the directory and clone this repository.
 ```
 cd pipeline_example
 git clone https://github.com/tbeaux18/FatFlies_scRNA.git
@@ -53,50 +61,40 @@ cd FatFlies_scRNA
 ./run_pipeline.sh
 ```
 
-Running this command will trigger the docker images to build, and once built, the pipeline will run a docker container which will run the pipeline. The docker images were built to run mostly on Linux/MacOS, and theoretically run on Windows. This pipeline could break if put on AWS due to its own dependencies. 
+### Pipeline Procedure
+By running this command:
+  * Docker images will build
+  * Docker runs the **ubuntur35:pipeline** container
+  * Docker mounts the parent directory of FatFlies_scRNA
+  * Sample Sheet is parsed and exchanges information with necessary input files such as zUMIs.yaml file
+  * Quality Control of Raw Data
+  * STAR Index is built with the provided FASTA, the GTF is not included in the index build
+  * zUMIs pipeline begins
+    * Stages
+      * Filtering
+      * Mapping
+      * Counting
+    * Output directory
+      * <sample_sheet_basename>_zumi_output
+        * BAM Files
+        * zUMI log files
+        * Count matrices
+        * Alignment plots
+  * Differential Expression Rscript runs
+    * Performs DE on respective Control vs. Test Groups
+    * Performs DE on respective Condition1 vs Condition2 Test Groups 
+    * Outputs **r_results** Directory
+      * HTML files for interactive scatterplots for each comparison
+      * CSV files for all and significant differential expresssed genes for each comparison
+  * Logs are outputted for each step and are located in ~/Fatflies_scRNA/logs directory
 
 
-### Prerequisites
-
-Refer to the Sample Sheet Wiki for creating the Sample Sheet
-The only required software is Docker, which the latest installation documentation can be found at this link:
-  * https://docs.docker.com/v17.12/install/
-
-
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
 
 ## Built With
 
 * [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
 * [Maven](https://maven.apache.org/) - Dependency Management
 * [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
 ## Authors
 
