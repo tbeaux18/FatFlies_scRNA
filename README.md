@@ -1,4 +1,4 @@
-# FatFlies_scRNA
+# SCRAPIE
 
 ### Single cell RNA-seq Analysis Pipeline
 
