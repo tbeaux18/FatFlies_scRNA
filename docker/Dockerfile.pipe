@@ -13,7 +13,7 @@ RUN mkdir umi_pipeline
 
 #  git clone https://github.com/sdparekh/zUMIs.git
 
-ADD /home/ubuntu/scrapie_pipeline/zUMIs /umi_pipeline/zUMIs
+ADD ../../zUMIs /umi_pipeline/zUMIs
 
 # RUN mv /pipeline/zUMIs /umi_pipeline/zUMIs
 
