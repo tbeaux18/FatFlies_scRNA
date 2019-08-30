@@ -21,6 +21,6 @@ ADD . /umi_pipeline/zUMIs
 #  && cd /umi_pipeline/zUMIs \
 #  && mv /umi_pipeline/zUMIs/UMIstuffFUN.R /umi_pipeline/zUMIs/UMIstuffFUN.DONTUSE.R
 
-WORKDIR /pipeline/FatFlies_scRNA
+WORKDIR /pipeline/SCRAPIE
 
 CMD ["python3", "scrna_configure_pipeline.py", "-z", "/umi_pipeline/zUMIs", "/pipeline/SampleSheet.csv"]
