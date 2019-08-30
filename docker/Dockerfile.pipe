@@ -11,9 +11,9 @@ RUN \
 
 RUN mkdir umi_pipeline
 
-RUN git clone https://github.com/sdparekh/zUMIs.git
+#  git clone https://github.com/sdparekh/zUMIs.git
 
-RUN mv /zUMIs /umi_pipeline/zUMIs
+RUN mv /pipeline/zUMIs /umi_pipeline/zUMIs
 
 # RUN mv /zUMIs /umi_pipeline/zUMIs \
 #  && cd /umi_pipeline/zUMIs \
