@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y git
 
 RUN \
-  R -e "install.packages(c('DT', 'stringr', 'htmltools', 'parallel'))"
+  R -e "install.packages(c('inflection', 'DT', 'stringr', 'htmltools', 'parallel'))"
 
 RUN mkdir umi_pipeline
 
